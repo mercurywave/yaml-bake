@@ -35,14 +35,15 @@ module.exports = {
       }
     ]
   },
-  plugins: [
+plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
-      inject: 'body'
+      inject: 'body',
+      filename: 'index.html'
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'public', to: '.' }
+        { from: 'public', to: '.', globOptions: { ignore: ['**/index.html'] } }
       ]
     })
   ],

@@ -9,7 +9,7 @@ declare global {
 const SPEC_FILE = 'spec.yaml';
 
 export class FileSystemService {
-  private rootDir: FileSystemDirectoryHandle | null = null;
+  public rootDir: FileSystemDirectoryHandle | null = null;
   private specCache: Spec | null = null;
   private databases: Map<string, Record[]> = new Map();
   private databaseCache: Map<string, string> = new Map();
