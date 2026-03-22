@@ -12,25 +12,14 @@ databases:
       lastName:
         type: string
         required: true
-      email:
-        type: string
-        required: true
       grade:
         type: number
         required: true
-      dateOfBirth:
-        type: date
-        required: true
-      enrollmentDate:
-        type: date
-        required: true
       classroom:
         type: reference
-        required: true
         target: classrooms
       teacher:
         type: reference
-        required: true
         target: teachers
   teachers:
     fields:
@@ -44,14 +33,8 @@ databases:
       lastName:
         type: string
         required: true
-      email:
-        type: string
-        required: true
       subject:
         type: string
-        required: true
-      hireDate:
-        type: date
         required: true
       classroom:
         type: reference
@@ -72,7 +55,6 @@ databases:
         required: true
       teacher:
         type: reference
-        required: true
         target: teachers
       students:
         type: array
@@ -81,7 +63,6 @@ databases:
           target: students
       classroom:
         type: reference
-        required: true
         target: classrooms
   classrooms:
     fields:
