@@ -10,7 +10,6 @@ export type FieldType =
   | 'uuid';
 
 export interface FieldDef {
-  name: string;
   type: FieldType;
   required: boolean;
   unique?: boolean;

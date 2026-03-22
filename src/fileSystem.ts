@@ -165,10 +165,16 @@ export class FileSystemService {
 
     const spec = await this.loadSpec();
     
-    // Convert array of fields to object
+    // Convert array of fields to object - fields should be in { key: fieldDef } format
     const fieldsObject: { [key: string]: any } = {};
     fields.forEach(field => {
-      fieldsObject[field.name] = field;
+      // Since we removed the 'name' property, we need to construct the fields object properly
+      // fields are passed as { key: fieldDef } pairs
+      const fieldKeys = Object.keys(field);
+      if (fieldKeys.length > 0) {
+        const key = fieldKeys[0];
+        fieldsObject[key] = field[key];
+      }
     });
     
     const newDatabase: any = {
@@ -217,37 +223,39 @@ export class FileSystemService {
 
     const record: Record = { id: crypto.randomUUID() };
     
-    // Convert fields object to array for iteration
-    const fieldsArray = Object.values(database.fields);
-    
-    fieldsArray.forEach(field => {
+    // Create record based on field definitions - field keys are used as record property names
+    for (const fieldName in database.fields) {
+      const field = database.fields[fieldName];
       if (!field.required) {
-        return;
+        continue;
       }
       
       switch (field.type) {
         case 'string':
-          record[field.name] = '';
+          record[fieldName] = '';
           break;
         case 'number':
-          record[field.name] = 0;
+          record[fieldName] = 0;
           break;
         case 'boolean':
-          record[field.name] = false;
+          record[fieldName] = false;
           break;
         case 'array':
-          record[field.name] = [];
+          record[fieldName] = [];
           break;
         case 'object':
-          record[field.name] = {};
+          record[fieldName] = {};
           break;
         case 'enum':
           if (field.options && field.options.length > 0) {
-            record[field.name] = field.options[0];
+            record[fieldName] = field.options[0];
           }
           break;
+        case 'uuid':
+          record[fieldName] = crypto.randomUUID();
+          break;
       }
-    });
+    }
     
     const records = await this.loadDatabase(databaseName);
     records.push(record);

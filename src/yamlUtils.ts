@@ -30,18 +30,12 @@ export function validateSpec(spec: any): string[] {
   // Check each database in the databases object
   for (const dbName in spec.databases) {
     const db = spec.databases[dbName];
-    if (!db.name) {
-      errors.push(`Database "${dbName}" missing "name" field`);
-    }
     if (!db.fields || typeof db.fields !== 'object' || Array.isArray(db.fields)) {
       errors.push(`Database "${dbName}" missing "fields" object`);
     } else {
       // Check each field in the fields object
       for (const fieldName in db.fields) {
         const field = db.fields[fieldName];
-        if (!field.name) {
-          errors.push(`Database "${dbName}" field "${fieldName}" missing "name"`);
-        }
         if (!field.type) {
           errors.push(`Database "${dbName}" field "${fieldName}" missing "type"`);
         }
@@ -72,59 +66,58 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
     return errors;
   }
   
-  // Convert fields object to array for iteration
-  const fieldsArray = Object.values(database.fields);
-  
-  fieldsArray.forEach((field) => {
-    if (record[field.name] === undefined || record[field.name] === null) {
+  // Check each field in the fields object, using the key as the field name
+  for (const fieldName in database.fields) {
+    const field = database.fields[fieldName];
+    if (record[fieldName] === undefined || record[fieldName] === null) {
       if (field.required) {
-        errors.push(`Field "${field.name}" is required`);
+        errors.push(`Field "${fieldName}" is required`);
       }
-      return;
+      continue;
     }
     
-    const value = record[field.name];
+    const value = record[fieldName];
     
     if (field.type === 'string' && typeof value !== 'string') {
-      errors.push(`Field "${field.name}" must be a string`);
+      errors.push(`Field "${fieldName}" must be a string`);
     } else if (field.type === 'number' && typeof value !== 'number') {
-      errors.push(`Field "${field.name}" must be a number`);
+      errors.push(`Field "${fieldName}" must be a number`);
     } else if (field.type === 'boolean' && typeof value !== 'boolean') {
-      errors.push(`Field "${field.name}" must be a boolean`);
+      errors.push(`Field "${fieldName}" must be a boolean`);
     } else if (field.type === 'array') {
       if (!Array.isArray(value)) {
-        errors.push(`Field "${field.name}" must be an array`);
+        errors.push(`Field "${fieldName}" must be an array`);
       } else if (field.items) {
         value.forEach((item: any, idx: number) => {
           if (!isValidType(item, field.items!.type)) {
-            errors.push(`Field "${field.name}" item at index ${idx} is invalid`);
+            errors.push(`Field "${fieldName}" item at index ${idx} is invalid`);
           }
         });
       }
     } else if (field.type === 'object') {
       if (typeof value !== 'object' || Array.isArray(value) || value === null) {
-        errors.push(`Field "${field.name}" must be an object`);
+        errors.push(`Field "${fieldName}" must be an object`);
       } else if (field.fields) {
-        // Convert nested fields to array for iteration
-        const nestedFieldsArray = Object.values(field.fields);
-        nestedFieldsArray.forEach((nestedField) => {
-          if (nestedField.name in value) {
-            if (!isValidType(value[nestedField.name], nestedField.type)) {
-              errors.push(`Field "${field.name}.${nestedField.name}" has invalid type`);
+        // Check nested fields
+        for (const nestedFieldName in field.fields) {
+          const nestedField = field.fields[nestedFieldName];
+          if (nestedFieldName in value) {
+            if (!isValidType(value[nestedFieldName], nestedField.type)) {
+              errors.push(`Field "${fieldName}.${nestedFieldName}" has invalid type`);
             }
           } else if (nestedField.required) {
-            errors.push(`Field "${field.name}.${nestedField.name}" is required`);
+            errors.push(`Field "${fieldName}.${nestedFieldName}" is required`);
           }
-        });
+        }
       }
     } else if (field.type === 'enum' && field.options && !field.options.includes(value)) {
-      errors.push(`Field "${field.name}" must be one of: ${field.options.join(', ')}`);
+      errors.push(`Field "${fieldName}" must be one of: ${field.options.join(', ')}`);
     } else if (field.type === 'reference' && field.target) {
       if (typeof value !== 'string') {
-        errors.push(`Field "${field.name}" must be a string (reference ID)`);
+        errors.push(`Field "${fieldName}" must be a string (reference ID)`);
       }
     }
-  });
+  }
   
   return errors;
 }
