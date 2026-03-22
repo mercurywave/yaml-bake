@@ -43,8 +43,8 @@ function App() {
       setValidationErrors(data.validationErrors.map(e => ({ message: e.message, severity: e.severity })));
       
       if (state.mode === 'spec') {
-        // Handle both array and object database structures for compatibility
-        let databases: DatabaseDef[] = data.spec?.databases ?? [];
+        // Handle object database structure
+        const databases: DatabaseDef[] = data.spec?.databases ? Object.values(data.spec.databases) : [];
         
         setDatabaseList(databases.map(db => ({
           name: db.name,
@@ -56,7 +56,7 @@ function App() {
         setSelectedRecordId(null);
       } else if (state.databaseName) {
         setSelectedDatabase(state.databaseName);
-        let databases: DatabaseDef[] = data.spec?.databases ?? [];
+        const databases: DatabaseDef[] = data.spec?.databases ? Object.values(data.spec.databases) : [];
         setDatabaseList(databases.map(d => ({
           name: d.name,
           count: d.name === state.databaseName ? (Array.isArray(parseYaml(data.content || '[]')) ? parseYaml(data.content || '[]').length : 0) : 0,
@@ -152,8 +152,8 @@ function App() {
     const loadInitial = async () => {
       try {
         const spec = await fileSystem.loadSpec();
-        // Handle both array and object database structures for compatibility
-        let databases: DatabaseDef[] = spec?.databases ?? [];
+        // Handle object database structure
+        const databases: DatabaseDef[] = spec?.databases ? Object.values(spec.databases) : [];
         setDatabaseList(databases.map(db => ({
           name: db.name,
           count: 0,

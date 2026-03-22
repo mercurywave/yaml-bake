@@ -9,7 +9,8 @@ interface DatabaseEditorProps {
 
 const DatabaseEditor: React.FC<DatabaseEditorProps> = ({ database, onSave, onDelete }) => {
   const [name, setName] = useState(database.name);
-  const [fields, setFields] = useState<FieldDef[]>(database.fields || []);
+  // Convert fields object to array for editing
+  const [fields, setFields] = useState<FieldDef[]>(Object.values(database.fields || {}));
   const [newFieldName, setNewFieldName] = useState('');
   const [newFieldType, setNewFieldType] = useState('string');
   const [newFieldRequired, setNewFieldRequired] = useState(true);
@@ -34,9 +35,15 @@ const DatabaseEditor: React.FC<DatabaseEditorProps> = ({ database, onSave, onDel
   };
 
   const handleSave = () => {
+    // Convert array back to object for saving
+    const fieldsObject: { [key: string]: FieldDef } = {};
+    fields.forEach(field => {
+      fieldsObject[field.name] = field;
+    });
+    
     onSave({
       name,
-      fields
+      fields: fieldsObject
     });
   };
 
@@ -112,10 +119,11 @@ const SpecEditor: React.FC<SpecEditorProps> = ({ spec, onSave }) => {
   const [newDatabaseName, setNewDatabaseName] = useState('');
   const [editingDatabase, setEditingDatabase] = useState<DatabaseDef | null>(null);
 
-  // Ensure databases is always an array
+  // Convert databases object to array for display
   useEffect(() => {
-    if (spec && spec.databases && Array.isArray(spec.databases)) {
-      setDatabases(spec.databases);
+    if (spec && spec.databases) {
+      const dbArray = Object.values(spec.databases);
+      setDatabases(dbArray);
     } else {
       setDatabases([]);
     }
@@ -126,7 +134,7 @@ const SpecEditor: React.FC<SpecEditorProps> = ({ spec, onSave }) => {
     
     const newDatabase: DatabaseDef = {
       name: newDatabaseName.trim(),
-      fields: []
+      fields: {}
     };
     
     setDatabases([...databases, newDatabase]);
@@ -150,8 +158,14 @@ const SpecEditor: React.FC<SpecEditorProps> = ({ spec, onSave }) => {
   };
 
   const handleSaveSpec = () => {
+    // Convert array back to object for saving
+    const databasesObject: { [key: string]: DatabaseDef } = {};
+    databases.forEach(db => {
+      databasesObject[db.name] = db;
+    });
+    
     onSave({
-      databases
+      databases: databasesObject
     });
   };
 
@@ -190,7 +204,7 @@ const SpecEditor: React.FC<SpecEditorProps> = ({ spec, onSave }) => {
             ) : (
               <div className="database-view">
                 <span className="database-name">{db.name}</span>
-                <span className="field-count">{(db.fields || []).length} fields</span>
+                <span className="field-count">{Object.keys(db.fields || {}).length} fields</span>
                 <button 
                   className="btn btn-secondary" 
                   onClick={() => setEditingDatabase(db)}

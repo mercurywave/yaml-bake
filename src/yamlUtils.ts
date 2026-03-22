@@ -21,41 +21,45 @@ export function validateSpec(spec: any): string[] {
     return errors;
   }
   
-  // Ensure databases exists and is an array
-  if (!spec.databases || !Array.isArray(spec.databases)) {
-    errors.push('Spec must have a "databases" array');
+  // Ensure databases exists and is an object
+  if (!spec.databases || typeof spec.databases !== 'object' || Array.isArray(spec.databases)) {
+    errors.push('Spec must have a "databases" object');
     return errors;
   }
   
-  spec.databases.forEach((db: any, index: number) => {
+  // Check each database in the databases object
+  for (const dbName in spec.databases) {
+    const db = spec.databases[dbName];
     if (!db.name) {
-      errors.push(`Database at index ${index} missing "name" field`);
+      errors.push(`Database "${dbName}" missing "name" field`);
     }
-    if (!db.fields || !Array.isArray(db.fields)) {
-      errors.push(`Database "${db.name}" missing "fields" array`);
+    if (!db.fields || typeof db.fields !== 'object' || Array.isArray(db.fields)) {
+      errors.push(`Database "${dbName}" missing "fields" object`);
     } else {
-      db.fields.forEach((field: any, fieldIndex: number) => {
+      // Check each field in the fields object
+      for (const fieldName in db.fields) {
+        const field = db.fields[fieldName];
         if (!field.name) {
-          errors.push(`Database "${db.name}" field at index ${fieldIndex} missing "name"`);
+          errors.push(`Database "${dbName}" field "${fieldName}" missing "name"`);
         }
         if (!field.type) {
-          errors.push(`Database "${db.name}" field "${field.name}" missing "type"`);
+          errors.push(`Database "${dbName}" field "${fieldName}" missing "type"`);
         }
         if (field.type === 'array' && !field.items) {
-          errors.push(`Database "${db.name}" field "${field.name}" of type "array" missing "items"`);
+          errors.push(`Database "${dbName}" field "${fieldName}" of type "array" missing "items"`);
         }
         if (field.type === 'object' && !field.fields) {
-          errors.push(`Database "${db.name}" field "${field.name}" of type "object" missing "fields"`);
+          errors.push(`Database "${dbName}" field "${fieldName}" of type "object" missing "fields"`);
         }
         if (field.type === 'enum' && !field.options) {
-          errors.push(`Database "${db.name}" field "${field.name}" of type "enum" missing "options"`);
+          errors.push(`Database "${dbName}" field "${fieldName}" of type "enum" missing "options"`);
         }
         if (field.type === 'reference' && !field.target) {
-          errors.push(`Database "${db.name}" field "${field.name}" of type "reference" missing "target"`);
+          errors.push(`Database "${dbName}" field "${fieldName}" of type "reference" missing "target"`);
         }
-      });
+      }
     }
-  });
+  }
   
   return errors;
 }
@@ -68,7 +72,10 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
     return errors;
   }
   
-  database.fields.forEach((field) => {
+  // Convert fields object to array for iteration
+  const fieldsArray = Object.values(database.fields);
+  
+  fieldsArray.forEach((field) => {
     if (record[field.name] === undefined || record[field.name] === null) {
       if (field.required) {
         errors.push(`Field "${field.name}" is required`);
@@ -98,7 +105,9 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
       if (typeof value !== 'object' || Array.isArray(value) || value === null) {
         errors.push(`Field "${field.name}" must be an object`);
       } else if (field.fields) {
-        field.fields.forEach((nestedField) => {
+        // Convert nested fields to array for iteration
+        const nestedFieldsArray = Object.values(field.fields);
+        nestedFieldsArray.forEach((nestedField) => {
           if (nestedField.name in value) {
             if (!isValidType(value[nestedField.name], nestedField.type)) {
               errors.push(`Field "${field.name}.${nestedField.name}" has invalid type`);

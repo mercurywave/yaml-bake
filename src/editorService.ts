@@ -38,7 +38,7 @@ export class EditorService {
         validationErrors: specErrors
       };
     } else if (state.databaseName) {
-      const database = spec.databases.find(db => db.name === state.databaseName);
+      const database = spec.databases[state.databaseName];
       if (!database) {
         throw new Error(`Database "${state.databaseName}" not found`);
       }
@@ -102,7 +102,7 @@ export class EditorService {
       } else if (state.databaseName) {
         if (state.recordId) {
           const spec = await fileSystem.loadSpec();
-          const database = spec.databases.find(db => db.name === state.databaseName);
+          const database = spec.databases[state.databaseName];
           if (!database) {
             throw new Error(`Database "${state.databaseName}" not found`);
           }
@@ -115,7 +115,7 @@ export class EditorService {
           await fileSystem.updateRecord(state.databaseName, data);
         } else {
           const spec = await fileSystem.loadSpec();
-          const database = spec.databases.find(db => db.name === state.databaseName);
+          const database = spec.databases[state.databaseName];
           if (!database) {
             throw new Error(`Database "${state.databaseName}" not found`);
           }
@@ -168,7 +168,7 @@ export class EditorService {
       } else if (state.databaseName && state.recordId) {
         // For single record, validate against spec
         const spec = await fileSystem.loadSpec();
-        const database = spec.databases.find(db => db.name === state.databaseName);
+        const database = spec.databases[state.databaseName];
         if (database) {
           const errors = validateRecord(data, database).map(msg => ({
             message: msg,

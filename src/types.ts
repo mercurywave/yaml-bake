@@ -15,7 +15,7 @@ export interface FieldDef {
   required: boolean;
   unique?: boolean;
   items?: FieldDef;
-  fields?: FieldDef[];
+  fields?: { [key: string]: FieldDef };
   options?: string[];
   target?: string;
   description?: string;
@@ -24,12 +24,12 @@ export interface FieldDef {
 
 export interface DatabaseDef {
   name: string;
-  fields: FieldDef[];
+  fields: { [key: string]: FieldDef };
   description?: string;
 }
 
 export interface Spec {
-  databases: DatabaseDef[];
+  databases: { [key: string]: DatabaseDef };
   version?: string;
   description?: string;
 }

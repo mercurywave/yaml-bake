@@ -165,12 +165,18 @@ export class FileSystemService {
 
     const spec = await this.loadSpec();
     
+    // Convert array of fields to object
+    const fieldsObject: { [key: string]: any } = {};
+    fields.forEach(field => {
+      fieldsObject[field.name] = field;
+    });
+    
     const newDatabase: any = {
       name: databaseName,
-      fields
+      fields: fieldsObject
     };
     
-    spec.databases.push(newDatabase);
+    spec.databases[databaseName] = newDatabase;
     await this.saveSpec(spec);
     
     const records: Record[] = [];
@@ -188,7 +194,7 @@ export class FileSystemService {
     }
 
     const spec = await this.loadSpec();
-    spec.databases = spec.databases.filter(db => db.name !== databaseName);
+    delete spec.databases[databaseName];
     await this.saveSpec(spec);
     
     this.databases.delete(databaseName);
@@ -203,7 +209,7 @@ export class FileSystemService {
 
   async createNewRecord(databaseName: string): Promise<Record> {
     const spec = await this.loadSpec();
-    const database = spec.databases.find(db => db.name === databaseName);
+    const database = spec.databases[databaseName];
     
     if (!database) {
       throw new Error(`Database "${databaseName}" not found`);
@@ -211,7 +217,10 @@ export class FileSystemService {
 
     const record: Record = { id: crypto.randomUUID() };
     
-    database.fields.forEach(field => {
+    // Convert fields object to array for iteration
+    const fieldsArray = Object.values(database.fields);
+    
+    fieldsArray.forEach(field => {
       if (!field.required) {
         return;
       }
