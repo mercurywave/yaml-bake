@@ -43,21 +43,7 @@ function App() {
       
       if (state.mode === 'spec') {
         // Handle both array and object database structures for compatibility
-        let databases: DatabaseDef[] = [];
-        if (data.spec?.databases && Array.isArray(data.spec.databases)) {
-          databases = data.spec.databases;
-        } else if (data.spec?.databases && typeof data.spec.databases === 'object') {
-          // If databases is an object (key-value pairs like in examples), convert to array
-          databases = Object.entries(data.spec.databases).map(([name, db]) => {
-            if (typeof db === 'object' && db !== null) {
-              return {
-                name,
-                fields: (db as any).fields || []
-              };
-            }
-            return { name, fields: [] };
-          });
-        }
+        let databases: DatabaseDef[] = data.spec?.databases ?? [];
         
         setDatabaseList(databases.map(db => ({
           name: db.name,
@@ -69,22 +55,7 @@ function App() {
         setSelectedRecordId(null);
       } else if (state.databaseName) {
         setSelectedDatabase(state.databaseName);
-        let databases: DatabaseDef[] = [];
-        if (data.spec?.databases && Array.isArray(data.spec.databases)) {
-          databases = data.spec.databases;
-        } else if (data.spec?.databases && typeof data.spec.databases === 'object') {
-          // If databases is an object (key-value pairs like in examples), convert to array
-          databases = Object.entries(data.spec.databases).map(([name, db]) => {
-            if (typeof db === 'object' && db !== null) {
-              return {
-                name,
-                fields: (db as any).fields || []
-              };
-            }
-            return { name, fields: [] };
-          });
-        }
-        const db = databases.find(d => d.name === state.databaseName);
+        let databases: DatabaseDef[] = data.spec?.databases ?? [];
         setDatabaseList(databases.map(d => ({
           name: d.name,
           count: d.name === state.databaseName ? (Array.isArray(JSON.parse(data.content || '[]')) ? JSON.parse(data.content || '[]').length : 0) : 0,
@@ -181,21 +152,7 @@ function App() {
       try {
         const spec = await fileSystem.loadSpec();
         // Handle both array and object database structures for compatibility
-        let databases: DatabaseDef[] = [];
-        if (spec.databases && Array.isArray(spec.databases)) {
-          databases = spec.databases;
-        } else if (spec.databases && typeof spec.databases === 'object') {
-          // If databases is an object (key-value pairs like in examples), convert to array
-          databases = Object.entries(spec.databases).map(([name, db]) => {
-            if (typeof db === 'object' && db !== null) {
-              return {
-                name,
-                fields: (db as any).fields || []
-              };
-            }
-            return { name, fields: [] };
-          });
-        }
+        let databases: DatabaseDef[] = spec?.databases ?? [];
         setDatabaseList(databases.map(db => ({
           name: db.name,
           count: 0,
