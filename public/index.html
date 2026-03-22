@@ -21,8 +21,13 @@
       display: flex;
       height: 100vh;
     }
-    .sidebar {
-      width: 280px;
+    .main-container {
+      display: flex;
+      flex: 1;
+      height: 100vh;
+    }
+    .left-pane {
+      width: 300px;
       background: #181825;
       border-right: 1px solid #45475a;
       display: flex;
@@ -46,26 +51,31 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .database-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
+    .database-selector {
+      padding: 16px;
+      border-bottom: 1px solid #45475a;
     }
-    .database {
+    .database-selector h3 {
+      font-size: 14px;
       margin-bottom: 8px;
+      color: #89b4fa;
     }
-    .database-header {
+    .database-list {
+      margin-top: 8px;
+    }
+    .database-item {
       display: flex;
       align-items: center;
       padding: 8px 12px;
       border-radius: 6px;
       cursor: pointer;
       transition: background 0.2s;
+      margin-bottom: 4px;
     }
-    .database-header:hover {
+    .database-item:hover {
       background: #313244;
     }
-    .database-header.active {
+    .database-item.active {
       background: #45475a;
     }
     .database-icon {
@@ -82,15 +92,32 @@
       font-size: 11px;
       color: #a6adc8;
     }
-    .database-header.warning .database-name {
+    .database-item.warning .database-name {
       color: #f9e2af;
     }
-    .database-header.error .database-name {
+    .database-item.error .database-name {
       color: #f38ba8;
     }
+    .records-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+    .records-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .records-header h3 {
+      font-size: 14px;
+      color: #89b4fa;
+    }
     .record-list {
-      margin-top: 4px;
-      padding-left: 8px;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
     }
     .record-item {
       padding: 6px 12px;
@@ -102,9 +129,13 @@
       overflow: hidden;
       text-overflow: ellipsis;
       transition: background 0.2s;
+      margin-bottom: 4px;
     }
     .record-item:hover {
       background: #313244;
+    }
+    .record-item.active {
+      background: #45475a;
     }
     .record-item.warning {
       color: #f9e2af;
@@ -112,7 +143,13 @@
     .record-item.error {
       color: #f38ba8;
     }
-    .main-content {
+    .no-records {
+      padding: 16px;
+      text-align: center;
+      color: #a6adc8;
+      font-size: 12px;
+    }
+    .right-pane {
       flex: 1;
       display: flex;
       flex-direction: column;

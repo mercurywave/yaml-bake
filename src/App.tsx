@@ -111,8 +111,6 @@ function App() {
     }
   };
 
-
-
   const handleSave = async () => {
     if (!editorState.mode || !editorData) return;
     
@@ -125,13 +123,13 @@ function App() {
     }
   };
 
-  const handleDatabaseClick = async (databaseName: string) => {
+  const handleDatabaseSelect = async (databaseName: string) => {
     setSelectedDatabase(databaseName);
     setSelectedRecordId(null);
     await loadEditorData({ mode: 'record', databaseName });
   };
 
-  const handleRecordClick = async (recordId: string) => {
+  const handleRecordSelect = async (recordId: string) => {
     setSelectedRecordId(recordId);
     if (selectedDatabase) {
       await loadEditorData({ mode: 'record', databaseName: selectedDatabase, recordId });
@@ -212,109 +210,127 @@ function App() {
 
   return (
     <div className="app">
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <h1>YAML Bake</h1>
-          {folderSelected ? (
-            <div className="folder-path">
-              {fileSystem.rootDir?.name || 'Selected folder'}
-            </div>
-          ) : (
-            <button 
-              className="btn btn-primary" 
-              style={{ marginTop: '8px', width: '100%' }}
-              onClick={handleSelectFolder}
-            >
-              Select Folder
-            </button>
-          )}
-        </div>
-        
-        <div className="database-list">
-          {folderSelected && (
-            <>
-              {databaseList.map((db) => (
-                <div key={db.name} className="database">
+      <div className="main-container">
+        {/* Left Pane - Record List View */}
+        <div className="left-pane">
+          <div className="sidebar-header">
+            <h1>YAML Bake</h1>
+            {folderSelected ? (
+              <div className="folder-path">
+                {fileSystem.rootDir?.name || 'Selected folder'}
+              </div>
+            ) : (
+              <button 
+                className="btn btn-primary" 
+                style={{ marginTop: '8px', width: '100%' }}
+                onClick={handleSelectFolder}
+              >
+                Select Folder
+              </button>
+            )}
+          </div>
+          
+          <div className="database-selector">
+            <h3>Databases</h3>
+            {folderSelected && (
+              <div className="database-list">
+                {databaseList.map((db) => (
                   <div 
-                    className={`database-header ${selectedDatabase === db.name ? 'active' : ''} ${db.hasErrors ? 'warning' : ''}`}
-                    onClick={() => handleDatabaseClick(db.name)}
+                    key={db.name} 
+                    className={`database-item ${selectedDatabase === db.name ? 'active' : ''} ${db.hasErrors ? 'warning' : ''}`}
+                    onClick={() => handleDatabaseSelect(db.name)}
                   >
                     <span className="database-icon">📁</span>
                     <span className="database-name">{db.name}</span>
                     <span className="record-count">{db.count} records</span>
                   </div>
-                  
-                  {selectedDatabase === db.name && recordList.length > 0 && (
-                    <div className="record-list">
-                      {recordList.map((record) => (
-                        <div 
-                          key={record.id} 
-                          className={`record-item ${selectedRecordId === record.id ? 'active' : ''}`}
-                          onClick={() => handleRecordClick(record.id)}
-                        >
-                          <span className="record-icon">📄</span>
-                          <span className="record-id">{record.id}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              <button 
-                className="btn btn-secondary" 
-                style={{ marginTop: '8px', width: '100%' }}
-                onClick={handleCreateDatabase}
-              >
-                + New Database
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-      
-      <div className="main-content">
-        <div className="toolbar">
-          <h2>
-            {editorState.mode === 'spec' 
-              ? 'spec.yaml' 
-              : `${selectedDatabase}${selectedRecordId ? ` - ${selectedRecordId}` : ''}`}
-          </h2>
-          
-          <div className="toolbar-actions">
-            <button 
-              className="btn btn-secondary" 
-              onClick={handleFormat}
-              disabled={!folderSelected}
-            >
-              Format
-            </button>
-            <button 
-              className="btn btn-primary" 
-              onClick={handleSave}
-              disabled={!folderSelected}
-            >
-              Save
-            </button>
-            {selectedDatabase && !selectedRecordId && (
-              <button 
-                className="btn btn-secondary"
-                onClick={handleCreateRecord}
-              >
-                + New Record
-              </button>
-            )}
-            {selectedRecordId && (
-              <button 
-                className="btn btn-danger"
-                onClick={() => handleDeleteRecord(selectedRecordId)}
-              >
-                Delete
-              </button>
+                ))}
+                <button 
+                  className="btn btn-secondary" 
+                  style={{ marginTop: '8px', width: '100%' }}
+                  onClick={handleCreateDatabase}
+                >
+                  + New Database
+                </button>
+              </div>
             )}
           </div>
+          
+          {selectedDatabase && (
+            <div className="records-section">
+              <div className="records-header">
+                <h3>Records</h3>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={handleCreateRecord}
+                  style={{ padding: '4px 8px', fontSize: '12px' }}
+                >
+                  + New Record
+                </button>
+              </div>
+              <div className="record-list">
+                {recordList.length > 0 ? (
+                  recordList.map((record) => (
+                    <div 
+                      key={record.id} 
+                      className={`record-item ${selectedRecordId === record.id ? 'active' : ''}`}
+                      onClick={() => handleRecordSelect(record.id)}
+                    >
+                      <span className="record-icon">📄</span>
+                      <span className="record-id">{record.id}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="no-records">No records found</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         
+        {/* Right Pane - Editor */}
+        <div className="right-pane">
+          <div className="toolbar">
+            <h2>
+              {editorState.mode === 'spec' 
+                ? 'spec.yaml' 
+                : `${selectedDatabase}${selectedRecordId ? ` - ${selectedRecordId}` : ''}`}
+            </h2>
+            
+            <div className="toolbar-actions">
+              <button 
+                className="btn btn-secondary" 
+                onClick={handleFormat}
+                disabled={!folderSelected}
+              >
+                Format
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={handleSave}
+                disabled={!folderSelected}
+              >
+                Save
+              </button>
+              {selectedDatabase && !selectedRecordId && (
+                <button 
+                  className="btn btn-secondary"
+                  onClick={handleCreateRecord}
+                >
+                  + New Record
+                </button>
+              )}
+              {selectedRecordId && (
+                <button 
+                  className="btn btn-danger"
+                  onClick={() => handleDeleteRecord(selectedRecordId)}
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          </div>
+          
           <div className="editor-container">
             <div className="editor-wrapper">
               {isLoading ? (
@@ -353,19 +369,20 @@ function App() {
               )}
             </div>
           
-          <div className="error-panel">
-            <h3>Validation</h3>
-            {validationErrors.length === 0 ? (
-              <p style={{ color: '#a6e3a1' }}>✓ No errors</p>
-            ) : (
-              <ul className="error-list">
-                {validationErrors.map((err, idx) => (
-                  <li key={idx} className={`error-item ${err.severity}`}>
-                    {err.severity === 'error' ? '✗' : '⚠'} {err.message}{err.line ? ` (line ${err.line})` : ''}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div className="error-panel">
+              <h3>Validation</h3>
+              {validationErrors.length === 0 ? (
+                <p style={{ color: '#a6e3a1' }}>✓ No errors</p>
+              ) : (
+                <ul className="error-list">
+                  {validationErrors.map((err, idx) => (
+                    <li key={idx} className={`error-item ${err.severity}`}>
+                      {err.severity === 'error' ? '✗' : '⚠'} {err.message}{err.line ? ` (line ${err.line})` : ''}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       </div>
