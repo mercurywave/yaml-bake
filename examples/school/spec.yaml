@@ -3,7 +3,7 @@ databases:
   students:
     fields:
       id:
-        type: string
+        type: uuid
         required: true
         unique: true
       firstName:
@@ -24,7 +24,7 @@ databases:
   teachers:
     fields:
       id:
-        type: string
+        type: uuid
         required: true
         unique: true
       firstName:
@@ -42,7 +42,7 @@ databases:
   classes:
     fields:
       id:
-        type: string
+        type: uuid
         required: true
         unique: true
       name:
@@ -67,7 +67,7 @@ databases:
   classrooms:
     fields:
       id:
-        type: string
+        type: uuid
         required: true
         unique: true
       name:
