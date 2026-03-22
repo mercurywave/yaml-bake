@@ -3,6 +3,7 @@ import { fileSystem } from './fileSystem';
 import { EditorData, EditorService } from './editorService';
 import { Spec, DatabaseDef, FieldDef, Record, EditorState } from './types';
 import MonacoEditor from '@monaco-editor/react';
+import { parseYaml } from './yamlUtils';
 
 const editorService = new EditorService();
 
@@ -58,7 +59,7 @@ function App() {
         let databases: DatabaseDef[] = data.spec?.databases ?? [];
         setDatabaseList(databases.map(d => ({
           name: d.name,
-          count: d.name === state.databaseName ? (Array.isArray(JSON.parse(data.content || '[]')) ? JSON.parse(data.content || '[]').length : 0) : 0,
+          count: d.name === state.databaseName ? (Array.isArray(parseYaml(data.content || '[]')) ? parseYaml(data.content || '[]').length : 0) : 0,
           hasErrors: data.validationErrors.length > 0
         })));
         
