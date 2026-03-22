@@ -2,6 +2,9 @@ import { Spec, DatabaseDef, FieldDef, Record } from './types';
 import * as yaml from 'yaml';
 
 export function parseYaml(content: string): any {
+  if (!content.trim()) {
+    return {};
+  }
   return yaml.parse(content);
 }
 
@@ -12,7 +15,14 @@ export function stringifyYaml(data: any): string {
 export function validateSpec(spec: any): string[] {
   const errors: string[] = [];
   
-  if (!spec || !spec.databases || !Array.isArray(spec.databases)) {
+  // Ensure spec is an object
+  if (!spec || typeof spec !== 'object') {
+    errors.push('Spec must be an object');
+    return errors;
+  }
+  
+  // Ensure databases exists and is an array
+  if (!spec.databases || !Array.isArray(spec.databases)) {
     errors.push('Spec must have a "databases" array');
     return errors;
   }

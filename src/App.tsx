@@ -40,22 +40,54 @@ function App() {
       setValidationErrors(data.validationErrors.map(e => ({ message: e.message, severity: e.severity })));
       
       if (state.mode === 'spec') {
-        setDatabaseList(data.spec?.databases.map(db => ({
+        // Handle both array and object database structures for compatibility
+        let databases: DatabaseDef[] = [];
+        if (data.spec?.databases && Array.isArray(data.spec.databases)) {
+          databases = data.spec.databases;
+        } else if (data.spec?.databases && typeof data.spec.databases === 'object') {
+          // If databases is an object (key-value pairs like in examples), convert to array
+          databases = Object.entries(data.spec.databases).map(([name, db]) => {
+            if (typeof db === 'object' && db !== null) {
+              return {
+                name,
+                fields: (db as any).fields || []
+              };
+            }
+            return { name, fields: [] };
+          });
+        }
+        
+        setDatabaseList(databases.map(db => ({
           name: db.name,
           count: 0,
           hasErrors: false
-        })) || []);
+        })));
         setRecordList([]);
         setSelectedDatabase(null);
         setSelectedRecordId(null);
       } else if (state.databaseName) {
         setSelectedDatabase(state.databaseName);
-        const db = data.spec?.databases.find(d => d.name === state.databaseName);
-        setDatabaseList(data.spec?.databases.map(d => ({
+        let databases: DatabaseDef[] = [];
+        if (data.spec?.databases && Array.isArray(data.spec.databases)) {
+          databases = data.spec.databases;
+        } else if (data.spec?.databases && typeof data.spec.databases === 'object') {
+          // If databases is an object (key-value pairs like in examples), convert to array
+          databases = Object.entries(data.spec.databases).map(([name, db]) => {
+            if (typeof db === 'object' && db !== null) {
+              return {
+                name,
+                fields: (db as any).fields || []
+              };
+            }
+            return { name, fields: [] };
+          });
+        }
+        const db = databases.find(d => d.name === state.databaseName);
+        setDatabaseList(databases.map(d => ({
           name: d.name,
           count: d.name === state.databaseName ? (Array.isArray(JSON.parse(data.content || '[]')) ? JSON.parse(data.content || '[]').length : 0) : 0,
           hasErrors: data.validationErrors.length > 0
-        })) || []);
+        })));
         
         if (state.recordId) {
           setSelectedRecordId(state.recordId);
@@ -156,7 +188,23 @@ function App() {
     const loadInitial = async () => {
       try {
         const spec = await fileSystem.loadSpec();
-        setDatabaseList(spec.databases.map(db => ({
+        // Handle both array and object database structures for compatibility
+        let databases: DatabaseDef[] = [];
+        if (spec.databases && Array.isArray(spec.databases)) {
+          databases = spec.databases;
+        } else if (spec.databases && typeof spec.databases === 'object') {
+          // If databases is an object (key-value pairs like in examples), convert to array
+          databases = Object.entries(spec.databases).map(([name, db]) => {
+            if (typeof db === 'object' && db !== null) {
+              return {
+                name,
+                fields: (db as any).fields || []
+              };
+            }
+            return { name, fields: [] };
+          });
+        }
+        setDatabaseList(databases.map(db => ({
           name: db.name,
           count: 0,
           hasErrors: false

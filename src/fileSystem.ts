@@ -1,5 +1,5 @@
 import { Spec, DatabaseDef, Record, EditorMode, EditorState } from './types';
-import { parseYaml } from './yamlUtils';
+import { parseYaml, stringifyYaml } from './yamlUtils';
 
 declare global {
   interface Window {
@@ -109,7 +109,7 @@ export class FileSystemService {
       throw new Error('No folder selected');
     }
 
-    const content = JSON.stringify(spec, null, 2);
+    const content = stringifyYaml(spec);
     
     try {
       let fileHandle: FileSystemFileHandle;
@@ -135,7 +135,7 @@ export class FileSystemService {
       throw new Error('No folder selected');
     }
 
-    const content = JSON.stringify(records, null, 2);
+    const content = stringifyYaml(records);
     const fileName = `${databaseName}.yaml`;
     
     try {
