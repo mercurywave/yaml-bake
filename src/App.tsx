@@ -44,10 +44,10 @@ function App() {
       
       if (state.mode === 'spec') {
         // Handle object database structure
-        const databases: DatabaseDef[] = data.spec?.databases ? Object.values(data.spec.databases) : [];
+        const databases: { [key: string]: DatabaseDef } = data.spec?.databases ?? {};
         
-        setDatabaseList(databases.map(db => ({
-          name: db.name,
+        setDatabaseList(Object.keys(databases).map(key => ({
+          name: key,
           count: 0,
           hasErrors: false
         })));
@@ -56,10 +56,10 @@ function App() {
         setSelectedRecordId(null);
       } else if (state.databaseName) {
         setSelectedDatabase(state.databaseName);
-        const databases: DatabaseDef[] = data.spec?.databases ? Object.values(data.spec.databases) : [];
-        setDatabaseList(databases.map(d => ({
-          name: d.name,
-          count: d.name === state.databaseName ? (Array.isArray(parseYaml(data.content || '[]')) ? parseYaml(data.content || '[]').length : 0) : 0,
+        const databases: { [key: string]: DatabaseDef } = data.spec?.databases ?? {};
+        setDatabaseList(Object.keys(databases).map(k => ({
+          name: k,
+          count: k === state.databaseName ? (Array.isArray(parseYaml(data.content || '[]')) ? parseYaml(data.content || '[]').length : 0) : 0,
           hasErrors: data.validationErrors.length > 0
         })));
         
@@ -153,9 +153,9 @@ function App() {
       try {
         const spec = await fileSystem.loadSpec();
         // Handle object database structure
-        const databases: DatabaseDef[] = spec?.databases ? Object.values(spec.databases) : [];
-        setDatabaseList(databases.map(db => ({
-          name: db.name,
+        const databases: { [key: string]: DatabaseDef } = spec?.databases ?? {};
+        setDatabaseList(Object.keys(databases).map(k => ({
+          name: k,
           count: 0,
           hasErrors: false
         })));

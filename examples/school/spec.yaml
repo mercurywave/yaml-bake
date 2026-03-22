@@ -1,7 +1,6 @@
 # School Database Schema
 databases:
   students:
-    name: Students
     fields:
       id:
         type: string
@@ -34,7 +33,6 @@ databases:
         required: true
         target: teachers
   teachers:
-    name: Teachers
     fields:
       id:
         type: string
@@ -59,7 +57,6 @@ databases:
         type: reference
         target: classrooms
   classes:
-    name: Classes
     fields:
       id:
         type: string
@@ -87,7 +84,6 @@ databases:
         required: true
         target: classrooms
   classrooms:
-    name: Classrooms
     fields:
       id:
         type: string

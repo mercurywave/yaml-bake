@@ -22,7 +22,6 @@ export interface FieldDef {
 }
 
 export interface DatabaseDef {
-  name: string;
   fields: { [key: string]: FieldDef };
   description?: string;
 }
