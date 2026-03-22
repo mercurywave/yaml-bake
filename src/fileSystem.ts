@@ -177,6 +177,15 @@ export class FileSystemService {
       }
     });
     
+    // Ensure id field is present for all databases
+    if (!fieldsObject.id) {
+      fieldsObject.id = {
+        type: 'uuid',
+        required: true,
+        unique: true
+      };
+    }
+    
     const newDatabase: any = {
       name: databaseName,
       fields: fieldsObject

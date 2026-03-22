@@ -1,6 +1,6 @@
 import { Spec, DatabaseDef, FieldDef, Record, EditorState } from './types';
 import { fileSystem } from './fileSystem';
-import { parseYaml, stringifyYaml, validateSpec, validateRecord } from './yamlUtils';
+import { parseYaml, stringifyYaml, validateSpec, validateRecord, addUUIDFieldsToSpec } from './yamlUtils';
 
 export interface ValidationError {
   message: string;
@@ -24,17 +24,18 @@ export class EditorService {
     this.state = state;
     
     const spec = await fileSystem.loadSpec();
+    const specWithUUIDs = addUUIDFieldsToSpec(spec);
     
     if (state.mode === 'spec') {
-      const specContent = stringifyYaml(spec);
-      const specErrors = validateSpec(spec).map(msg => ({
+      const specContent = stringifyYaml(specWithUUIDs);
+      const specErrors = validateSpec(specWithUUIDs).map(msg => ({
         message: msg,
         severity: 'error' as const
       }));
       
       return {
         content: specContent,
-        spec,
+        spec: specWithUUIDs,
         validationErrors: specErrors
       };
     } else if (state.databaseName) {
@@ -160,7 +161,8 @@ export class EditorService {
       const data = parseYaml(content);
       
       if (state.mode === 'spec') {
-        const errors = validateSpec(data).map(msg => ({
+        const specWithUUIDs = addUUIDFieldsToSpec(data);
+        const errors = validateSpec(specWithUUIDs).map(msg => ({
           message: msg,
           severity: 'error' as const
         }));

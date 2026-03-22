@@ -58,6 +58,35 @@ export function validateSpec(spec: any): string[] {
   return errors;
 }
 
+export function addUUIDFieldsToSpec(spec: Spec): Spec {
+  // Create a copy of the spec to avoid modifying the original
+  const updatedSpec = JSON.parse(JSON.stringify(spec));
+  
+  // For each database, ensure it has a UUID field
+  for (const dbName in updatedSpec.databases) {
+    const db = updatedSpec.databases[dbName];
+    
+    // If there's no id field defined, add it
+    if (!db.fields.id) {
+      db.fields.id = {
+        type: 'uuid',
+        required: true,
+        unique: true
+      };
+    }
+    // If the id field exists but doesn't have the proper UUID configuration, update it
+    else if (db.fields.id.type !== 'uuid') {
+      db.fields.id = {
+        type: 'uuid',
+        required: true,
+        unique: true
+      };
+    }
+  }
+  
+  return updatedSpec;
+}
+
 export function validateRecord(record: any, database: DatabaseDef): string[] {
   const errors: string[] = [];
   

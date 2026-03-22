@@ -2,10 +2,6 @@
 databases:
   students:
     fields:
-      id:
-        type: uuid
-        required: true
-        unique: true
       firstName:
         type: string
         required: true
@@ -23,10 +19,6 @@ databases:
         target: teachers
   teachers:
     fields:
-      id:
-        type: uuid
-        required: true
-        unique: true
       firstName:
         type: string
         required: true
@@ -41,10 +33,6 @@ databases:
         target: classrooms
   classes:
     fields:
-      id:
-        type: uuid
-        required: true
-        unique: true
       name:
         type: string
         required: true
@@ -66,10 +54,6 @@ databases:
         target: classrooms
   classrooms:
     fields:
-      id:
-        type: uuid
-        required: true
-        unique: true
       name:
         type: string
         required: true
