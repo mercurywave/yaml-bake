@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fileSystem } from './fileSystem';
 import { EditorData, EditorService } from './editorService';
 import { Spec, DatabaseDef, FieldDef, Record, EditorState } from './types';
+import MonacoEditor from '@monaco-editor/react';
 
 const editorService = new EditorService();
 
 interface ValidationError {
   message: string;
   severity: 'error' | 'warning';
+  line?: number;
 }
 
 function App() {
@@ -109,15 +111,7 @@ function App() {
     }
   };
 
-  const handleContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setEditorContent(e.target.value);
-    
-    if (editorData) {
-      editorService.getValidationErrors(e.target.value, editorState).then(errors => {
-        setValidationErrors(errors.map((e) => ({ message: e.message, severity: e.severity })));
-      });
-    }
-  }, [editorContent, editorData, editorState]);
+
 
   const handleSave = async () => {
     if (!editorState.mode || !editorData) return;
@@ -321,25 +315,43 @@ function App() {
           </div>
         </div>
         
-        <div className="editor-container">
-          <div className="editor-wrapper">
-            {isLoading ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                <p>Loading...</p>
-              </div>
-            ) : (
-              <textarea
-                ref={editorRef}
-                className="editor"
-                value={editorContent}
-                onChange={handleContentChange}
-                spellCheck={false}
-                autoCapitalize="off"
-                autoCorrect="off"
-                autoComplete="off"
-              />
-            )}
-          </div>
+          <div className="editor-container">
+            <div className="editor-wrapper">
+              {isLoading ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <p>Loading...</p>
+                </div>
+              ) : (
+                <MonacoEditor
+                  height="100%"
+                  language="yaml"
+                  value={editorContent}
+                  onChange={(value) => {
+                    if (value !== undefined) {
+                      setEditorContent(value);
+                      if (editorData) {
+                        editorService.getValidationErrors(value, editorState).then(errors => {
+                          setValidationErrors(errors.map((e) => ({ message: e.message, severity: e.severity, line: e.line })));
+                        });
+                      }
+                    }
+                  }}
+                  theme="vs-dark"
+                  options={{
+                    minimap: { enabled: true },
+                    fontSize: 14,
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    wordWrap: 'on',
+                    renderLineHighlight: 'gutter',
+                    lineNumbers: 'on',
+                    suggest: {
+                      showStatusBar: true,
+                    }
+                  }}
+                />
+              )}
+            </div>
           
           <div className="error-panel">
             <h3>Validation</h3>
@@ -349,7 +361,7 @@ function App() {
               <ul className="error-list">
                 {validationErrors.map((err, idx) => (
                   <li key={idx} className={`error-item ${err.severity}`}>
-                    {err.severity === 'error' ? '✗' : '⚠'} {err.message}
+                    {err.severity === 'error' ? '✗' : '⚠'} {err.message}{err.line ? ` (line ${err.line})` : ''}
                   </li>
                 ))}
               </ul>

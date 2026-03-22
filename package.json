@@ -21,8 +21,10 @@
   },
   "homepage": "https://github.com/mercurywave/yaml-bake#readme",
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "copy-webpack-plugin": "^14.0.0",
     "html-webpack-plugin": "^5.6.6",
+    "monaco-editor": "^0.55.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "webpack-cli": "^7.0.2",
@@ -34,6 +36,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "css-loader": "^7.1.4",
+    "monaco-editor-webpack-plugin": "^7.1.1",
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
