@@ -11,7 +11,6 @@ interface LeftPaneProps {
   handleSelectFolder: () => void;
   handleDatabaseSelect: (databaseName: string) => void;
   handleRecordSelect: (recordId: string) => void;
-  handleCreateDatabase: () => void;
   handleCreateRecord: () => void;
   handleDeleteDatabase: (databaseName: string) => void;
   handleDeleteRecord: (recordId: string) => void;
@@ -27,7 +26,6 @@ const LeftPane: React.FC<LeftPaneProps> = ({
   handleSelectFolder,
   handleDatabaseSelect,
   handleRecordSelect,
-  handleCreateDatabase,
   handleCreateRecord,
   handleDeleteDatabase,
   handleDeleteRecord
@@ -66,13 +64,6 @@ const LeftPane: React.FC<LeftPaneProps> = ({
                 <span className="record-count">{db.count} records</span>
               </div>
             ))}
-            <button 
-              className="btn btn-secondary" 
-              style={{ marginTop: '8px', width: '100%' }}
-              onClick={handleCreateDatabase}
-            >
-              + New Database
-            </button>
           </div>
         )}
       </div>

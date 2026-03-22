@@ -110,18 +110,6 @@ function App() {
     }
   };
 
-  const handleCreateDatabase = async () => {
-    const name = prompt('Enter database name:');
-    if (name) {
-      const fields: FieldDef[] = [
-        { type: 'uuid', required: true },
-        { type: 'string', required: true }
-      ];
-      await editorService.createNewDatabase(name, fields);
-      await loadEditorData({ mode: 'spec' });
-    }
-  };
-
   const handleCreateRecord = async () => {
     if (selectedDatabase) {
       await editorService.createNewRecord(selectedDatabase);
@@ -181,7 +169,6 @@ function App() {
           handleSelectFolder={handleSelectFolder}
           handleDatabaseSelect={handleDatabaseSelect}
           handleRecordSelect={handleRecordSelect}
-          handleCreateDatabase={handleCreateDatabase}
           handleCreateRecord={handleCreateRecord}
           handleDeleteDatabase={handleDeleteDatabase}
           handleDeleteRecord={handleDeleteRecord}
