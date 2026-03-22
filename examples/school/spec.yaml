@@ -1,0 +1,109 @@
+# School Database Schema
+databases:
+  students:
+    name: Students
+    fields:
+      id:
+        type: string
+        required: true
+        unique: true
+      firstName:
+        type: string
+        required: true
+      lastName:
+        type: string
+        required: true
+      email:
+        type: string
+        required: true
+      grade:
+        type: number
+        required: true
+      dateOfBirth:
+        type: date
+        required: true
+      enrollmentDate:
+        type: date
+        required: true
+      classroom:
+        type: reference
+        required: true
+        target: classrooms
+      teacher:
+        type: reference
+        required: true
+        target: teachers
+  teachers:
+    name: Teachers
+    fields:
+      id:
+        type: string
+        required: true
+        unique: true
+      firstName:
+        type: string
+        required: true
+      lastName:
+        type: string
+        required: true
+      email:
+        type: string
+        required: true
+      subject:
+        type: string
+        required: true
+      hireDate:
+        type: date
+        required: true
+      classroom:
+        type: reference
+        target: classrooms
+  classes:
+    name: Classes
+    fields:
+      id:
+        type: string
+        required: true
+        unique: true
+      name:
+        type: string
+        required: true
+      description:
+        type: string
+      subject:
+        type: string
+        required: true
+      teacher:
+        type: reference
+        required: true
+        target: teachers
+      students:
+        type: array
+        items:
+          type: reference
+          target: students
+      classroom:
+        type: reference
+        required: true
+        target: classrooms
+  classrooms:
+    name: Classrooms
+    fields:
+      id:
+        type: string
+        required: true
+        unique: true
+      name:
+        type: string
+        required: true
+      building:
+        type: string
+        required: true
+      floor:
+        type: number
+      capacity:
+        type: number
+      equipment:
+        type: array
+        items:
+          type: string
