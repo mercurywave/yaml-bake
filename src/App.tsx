@@ -4,6 +4,8 @@ import { EditorData, EditorService } from './editorService';
 import { Spec, DatabaseDef, FieldDef, Record, EditorState } from './types';
 import MonacoEditor from '@monaco-editor/react';
 import { parseYaml } from './yamlUtils';
+import LeftPane from './LeftPane';
+import RightPane from './RightPane';
 
 const editorService = new EditorService();
 
@@ -169,180 +171,37 @@ function App() {
   return (
     <div className="app">
       <div className="main-container">
-        {/* Left Pane - Record List View */}
-        <div className="left-pane">
-          <div className="sidebar-header">
-            <h1>YAML Bake</h1>
-            {folderSelected ? (
-              <div className="folder-path">
-                {fileSystem.rootDir?.name || 'Selected folder'}
-              </div>
-            ) : (
-              <button 
-                className="btn btn-primary" 
-                style={{ marginTop: '8px', width: '100%' }}
-                onClick={handleSelectFolder}
-              >
-                Select Folder
-              </button>
-            )}
-          </div>
-          
-          <div className="database-selector">
-            <h3>Databases</h3>
-            {folderSelected && (
-              <div className="database-list">
-                {databaseList.map((db) => (
-                  <div 
-                    key={db.name} 
-                    className={`database-item ${selectedDatabase === db.name ? 'active' : ''} ${db.hasErrors ? 'warning' : ''}`}
-                    onClick={() => handleDatabaseSelect(db.name)}
-                  >
-                    <span className="database-icon">📁</span>
-                    <span className="database-name">{db.name}</span>
-                    <span className="record-count">{db.count} records</span>
-                  </div>
-                ))}
-                <button 
-                  className="btn btn-secondary" 
-                  style={{ marginTop: '8px', width: '100%' }}
-                  onClick={handleCreateDatabase}
-                >
-                  + New Database
-                </button>
-              </div>
-            )}
-          </div>
-          
-          {selectedDatabase && (
-            <div className="records-section">
-              <div className="records-header">
-                <h3>Records</h3>
-                <button 
-                  className="btn btn-secondary" 
-                  onClick={handleCreateRecord}
-                  style={{ padding: '4px 8px', fontSize: '12px' }}
-                >
-                  + New Record
-                </button>
-              </div>
-              <div className="record-list">
-                {recordList.length > 0 ? (
-                  recordList.map((record) => (
-                    <div 
-                      key={record.id} 
-                      className={`record-item ${selectedRecordId === record.id ? 'active' : ''}`}
-                      onClick={() => handleRecordSelect(record.id)}
-                    >
-                      <span className="record-icon">📄</span>
-                      <span className="record-id">{record.id}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="no-records">No records found</div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        <LeftPane
+          folderSelected={folderSelected}
+          databaseList={databaseList}
+          recordList={recordList}
+          selectedDatabase={selectedDatabase}
+          selectedRecordId={selectedRecordId}
+          fileSystem={fileSystem}
+          handleSelectFolder={handleSelectFolder}
+          handleDatabaseSelect={handleDatabaseSelect}
+          handleRecordSelect={handleRecordSelect}
+          handleCreateDatabase={handleCreateDatabase}
+          handleCreateRecord={handleCreateRecord}
+          handleDeleteDatabase={handleDeleteDatabase}
+          handleDeleteRecord={handleDeleteRecord}
+        />
         
-        {/* Right Pane - Editor */}
-        <div className="right-pane">
-          <div className="toolbar">
-            <h2>
-              {editorState.mode === 'spec' 
-                ? 'spec.yaml' 
-                : `${selectedDatabase}${selectedRecordId ? ` - ${selectedRecordId}` : ''}`}
-            </h2>
-            
-            <div className="toolbar-actions">
-              <button 
-                className="btn btn-secondary" 
-                onClick={handleFormat}
-                disabled={!folderSelected}
-              >
-                Format
-              </button>
-              <button 
-                className="btn btn-primary" 
-                onClick={handleSave}
-                disabled={!folderSelected}
-              >
-                Save
-              </button>
-              {selectedDatabase && !selectedRecordId && (
-                <button 
-                  className="btn btn-secondary"
-                  onClick={handleCreateRecord}
-                >
-                  + New Record
-                </button>
-              )}
-              {selectedRecordId && (
-                <button 
-                  className="btn btn-danger"
-                  onClick={() => handleDeleteRecord(selectedRecordId)}
-                >
-                  Delete
-                </button>
-              )}
-            </div>
-          </div>
-          
-          <div className="editor-container">
-            <div className="editor-wrapper">
-              {isLoading ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                  <p>Loading...</p>
-                </div>
-              ) : (
-                <MonacoEditor
-                  height="100%"
-                  language="yaml"
-                  value={editorContent}
-                  onChange={(value) => {
-                    if (value !== undefined) {
-                      setEditorContent(value);
-                      if (editorData) {
-                        editorService.getValidationErrors(value, editorState).then(errors => {
-                          setValidationErrors(errors.map((e) => ({ message: e.message, severity: e.severity, line: e.line })));
-                        });
-                      }
-                    }
-                  }}
-                  theme="vs-dark"
-                  options={{
-                    minimap: { enabled: true },
-                    fontSize: 14,
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    wordWrap: 'on',
-                    renderLineHighlight: 'gutter',
-                    lineNumbers: 'on',
-                    suggest: {
-                      showStatusBar: true,
-                    }
-                  }}
-                />
-              )}
-            </div>
-          
-            <div className="error-panel">
-              <h3>Validation</h3>
-              {validationErrors.length === 0 ? (
-                <p style={{ color: '#a6e3a1' }}>✓ No errors</p>
-              ) : (
-                <ul className="error-list">
-                  {validationErrors.map((err, idx) => (
-                    <li key={idx} className={`error-item ${err.severity}`}>
-                      {err.severity === 'error' ? '✗' : '⚠'} {err.message}{err.line ? ` (line ${err.line})` : ''}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
+        <RightPane
+          editorState={editorState}
+          editorContent={editorContent}
+          validationErrors={validationErrors}
+          selectedDatabase={selectedDatabase}
+          selectedRecordId={selectedRecordId}
+          isLoading={isLoading}
+          handleFormat={handleFormat}
+          handleSave={handleSave}
+          handleCreateRecord={handleCreateRecord}
+          handleDeleteRecord={handleDeleteRecord}
+          setEditorContent={setEditorContent}
+          editorData={editorData}
+          getValidationErrors={editorService.getValidationErrors}
+        />
       </div>
     </div>
   );
