@@ -75,8 +75,9 @@ function App() {
     setEditorContent(e.target.value);
     
     if (editorData) {
-      const errors = editorService.getValidationErrors(e.target.value, editorState);
-      setValidationErrors(errors.map(e => ({ message: e.message, severity: e.severity })));
+      editorService.getValidationErrors(e.target.value, editorState).then(errors => {
+        setValidationErrors(errors.map((e) => ({ message: e.message, severity: e.severity })));
+      });
     }
   }, [editorContent, editorData, editorState]);
 

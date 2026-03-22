@@ -1,9 +1,30 @@
 import { Spec, DatabaseDef, Record, EditorMode, EditorState } from './types';
+import { parseYaml } from './yamlUtils';
 
 declare global {
   interface Window {
     showDirectoryPicker: () => Promise<FileSystemDirectoryHandle>;
   }
+}
+
+// Define types for File System Access API
+interface FileSystemDirectoryHandle {
+  name: string;
+  kind: 'directory';
+  getFileHandle(name: string, options?: { create?: boolean }): Promise<FileSystemFileHandle>;
+  removeEntry(name: string): Promise<void>;
+}
+
+interface FileSystemFileHandle {
+  name: string;
+  kind: 'file';
+  getFile(): Promise<File>;
+  createWritable(): Promise<FileSystemWritableFileStream>;
+}
+
+interface FileSystemWritableFileStream {
+  write(data: string): Promise<void>;
+  close(): Promise<void>;
 }
 
 const SPEC_FILE = 'spec.yaml';
@@ -41,7 +62,7 @@ export class FileSystemService {
       const fileHandle = await this.rootDir.getFileHandle(SPEC_FILE);
       const file = await fileHandle.getFile();
       const content = await file.text();
-      const spec = JSON.parse(content || '{}') as Spec;
+      const spec = parseYaml(content || '') as Spec;
       if (Object.keys(spec).length === 0) {
         throw new Error('Empty spec file');
       }
@@ -68,7 +89,7 @@ export class FileSystemService {
       const fileHandle = await this.rootDir.getFileHandle(fileName);
       const file = await fileHandle.getFile();
       const content = await file.text();
-      const records = JSON.parse(content || '[]') as Record[];
+      const records = parseYaml(content || '[]') as Record[];
       this.databases.set(databaseName, records);
       this.databaseCache.set(databaseName, content);
       return records;

@@ -91,7 +91,7 @@ export class EditorService {
 
   async saveEditorData(state: EditorState, content: string): Promise<void> {
     try {
-      const data = JSON.parse(content);
+      const data = parseYaml(content);
       
       if (state.mode === 'spec') {
         const errors = validateSpec(data);
@@ -155,9 +155,9 @@ export class EditorService {
     await fileSystem.deleteDatabase(name);
   }
 
-  getValidationErrors(content: string, state: EditorState): ValidationError[] {
+  async getValidationErrors(content: string, state: EditorState): Promise<ValidationError[]> {
     try {
-      const data = JSON.parse(content);
+      const data = parseYaml(content);
       
       if (state.mode === 'spec') {
         const errors = validateSpec(data).map(msg => ({
@@ -166,12 +166,17 @@ export class EditorService {
         }));
         return errors;
       } else if (state.databaseName && state.recordId) {
-        // For single record, validate inline
-        const errors = validateRecord(data, { name: state.databaseName, fields: [] }).map(msg => ({
-          message: msg,
-          severity: 'error' as const
-        }));
-        return errors;
+        // For single record, validate against spec
+        const spec = await fileSystem.loadSpec();
+        const database = spec.databases.find(db => db.name === state.databaseName);
+        if (database) {
+          const errors = validateRecord(data, database).map(msg => ({
+            message: msg,
+            severity: 'error' as const
+          }));
+          return errors;
+        }
+        return [];
       }
       
       return [];
@@ -185,7 +190,7 @@ export class EditorService {
 
   formatContent(content: string): string {
     try {
-      const data = JSON.parse(content);
+      const data = parseYaml(content);
       return stringifyYaml(data);
     } catch {
       return content;
