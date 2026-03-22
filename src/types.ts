@@ -12,7 +12,8 @@ export type FieldType =
 export interface FieldDef {
   name: string;
   type: FieldType;
-  optional?: boolean;
+  required: boolean;
+  unique?: boolean;
   items?: FieldDef;
   fields?: FieldDef[];
   options?: string[];

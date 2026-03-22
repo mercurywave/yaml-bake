@@ -111,8 +111,8 @@ function App() {
     const name = prompt('Enter database name:');
     if (name) {
       const fields: FieldDef[] = [
-        { name: 'id', type: 'uuid' },
-        { name: 'name', type: 'string' }
+        { name: 'id', type: 'uuid', required: true },
+        { name: 'name', type: 'string', required: true }
       ];
       await editorService.createNewDatabase(name, fields);
       await loadEditorData({ mode: 'spec' });

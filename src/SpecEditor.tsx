@@ -12,7 +12,7 @@ const DatabaseEditor: React.FC<DatabaseEditorProps> = ({ database, onSave, onDel
   const [fields, setFields] = useState<FieldDef[]>(database.fields || []);
   const [newFieldName, setNewFieldName] = useState('');
   const [newFieldType, setNewFieldType] = useState('string');
-  const [newFieldOptional, setNewFieldOptional] = useState(false);
+  const [newFieldRequired, setNewFieldRequired] = useState(true);
 
   const handleAddField = () => {
     if (!newFieldName.trim()) return;
@@ -20,7 +20,7 @@ const DatabaseEditor: React.FC<DatabaseEditorProps> = ({ database, onSave, onDel
     const newField: FieldDef = {
       name: newFieldName.trim(),
       type: newFieldType as any,
-      optional: newFieldOptional
+      required: newFieldRequired
     };
     
     setFields([...fields, newField]);
@@ -75,10 +75,10 @@ const DatabaseEditor: React.FC<DatabaseEditorProps> = ({ database, onSave, onDel
           <label>
             <input
               type="checkbox"
-              checked={newFieldOptional}
-              onChange={(e) => setNewFieldOptional(e.target.checked)}
+              checked={newFieldRequired}
+              onChange={(e) => setNewFieldRequired(e.target.checked)}
             />
-            Optional
+            Required
           </label>
           <button className="btn btn-secondary" onClick={handleAddField}>Add Field</button>
         </div>
@@ -88,7 +88,7 @@ const DatabaseEditor: React.FC<DatabaseEditorProps> = ({ database, onSave, onDel
             <div key={index} className="field-item">
               <span className="field-name">{field.name}</span>
               <span className="field-type">{field.type}</span>
-              <span className="field-optional">{field.optional ? 'optional' : 'required'}</span>
+              <span className="field-required">{field.required ? 'required' : 'optional'}</span>
               <button className="btn btn-small" onClick={() => handleRemoveField(index)}>Remove</button>
             </div>
           ))}

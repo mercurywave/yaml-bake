@@ -70,7 +70,7 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
   
   database.fields.forEach((field) => {
     if (record[field.name] === undefined || record[field.name] === null) {
-      if (!field.optional) {
+      if (field.required) {
         errors.push(`Field "${field.name}" is required`);
       }
       return;
@@ -103,7 +103,7 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
             if (!isValidType(value[nestedField.name], nestedField.type)) {
               errors.push(`Field "${field.name}.${nestedField.name}" has invalid type`);
             }
-          } else if (!nestedField.optional) {
+          } else if (nestedField.required) {
             errors.push(`Field "${field.name}.${nestedField.name}" is required`);
           }
         });

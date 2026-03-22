@@ -176,7 +176,7 @@ export class FileSystemService {
     const records: Record[] = [];
     this.databases.set(databaseName, records);
     
-    const content = JSON.stringify(records, null, 2);
+    const content = stringifyYaml(records);
     const fileName = `${databaseName}.yaml`;
     
     await this.rootDir.getFileHandle(fileName, { create: true });
@@ -212,7 +212,7 @@ export class FileSystemService {
     const record: Record = { id: crypto.randomUUID() };
     
     database.fields.forEach(field => {
-      if (field.optional) {
+      if (!field.required) {
         return;
       }
       
