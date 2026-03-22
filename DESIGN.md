@@ -53,24 +53,17 @@ A single-page static web application for editing hierarchical, typed, structured
 - YAML editor with validation
 - Application styling (dark theme)
 - Fixed critical build issues (YAML utils, type system, file system API)
+- **Record List View**: Show list of records when viewing a database (not just single record)
+- **Record Navigation**: Add navigation between records in a database
 
 ### ⚠️ In Progress
 
 ### ❌ Pending
 
-#### Critical Issues
-- [x] **Type System Fix**: Add `uuid` to `FieldType` union type in `types.ts`
-- [x] **YAML Parsing**: Implement `parseYaml()` and `stringifyYaml()` functions in `yamlUtils.ts`
-- [x] **File System API Fixes**: 
-  - Add TypeScript types for `showDirectoryPicker`
-  - Fix `writeFileHandle` usage (use `createWritable()` instead)
-- [x] **Private Property Access**: Make `rootDir` accessible or add getter in `fileSystem.ts`
 
 #### Feature Enhancements
 - [ ] **Autocomplete**: Add field name and reference ID autocomplete in editor
 - [ ] **Spec Editor UI**: Create visual spec editor for defining databases and fields
-- [ ] **Record List View**: Show list of records when viewing a database (not just single record)
-- [ ] **Record Navigation**: Add navigation between records in a database
 - [ ] **Field Type Editor**: Visual editor for field definitions (dropdowns for type, enum options)
 - [ ] **Reference Validation**: Validate reference fields point to existing records
 - [ ] **Database Selection**: Allow selecting which database to view in sidebar

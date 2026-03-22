@@ -60,7 +60,13 @@ function App() {
         if (state.recordId) {
           setSelectedRecordId(state.recordId);
         } else {
-          setRecordList([]);
+          // Load records for this database
+          const records = await fileSystem.loadDatabase(state.databaseName);
+          setRecordList(records.map(record => ({
+            id: record.id || '',
+            warning: false,
+            error: false
+          })));
         }
       }
     } catch (error) {
@@ -195,6 +201,21 @@ function App() {
                     <span className="database-name">{db.name}</span>
                     <span className="record-count">{db.count} records</span>
                   </div>
+                  
+                  {selectedDatabase === db.name && recordList.length > 0 && (
+                    <div className="record-list">
+                      {recordList.map((record) => (
+                        <div 
+                          key={record.id} 
+                          className={`record-item ${selectedRecordId === record.id ? 'active' : ''}`}
+                          onClick={() => handleRecordClick(record.id)}
+                        >
+                          <span className="record-icon">📄</span>
+                          <span className="record-id">{record.id}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
               
