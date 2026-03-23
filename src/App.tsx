@@ -117,13 +117,6 @@ function App() {
     }
   };
 
-  const handleDeleteDatabase = async (databaseName: string) => {
-    if (confirm(`Delete database "${databaseName}"?`)) {
-      await editorService.deleteDatabase(databaseName);
-      await loadEditorData({ mode: 'spec' });
-    }
-  };
-
   const handleDeleteRecord = async (recordId: string) => {
     if (selectedDatabase && confirm('Delete this record?')) {
       await editorService.deleteRecord(selectedDatabase, recordId);
@@ -170,7 +163,6 @@ function App() {
           handleDatabaseSelect={handleDatabaseSelect}
           handleRecordSelect={handleRecordSelect}
           handleCreateRecord={handleCreateRecord}
-          handleDeleteDatabase={handleDeleteDatabase}
           handleDeleteRecord={handleDeleteRecord}
         />
         

@@ -24,18 +24,17 @@ export class EditorService {
     this.state = state;
     
     const spec = await fileSystem.loadSpec();
-    const specWithUUIDs = addUUIDFieldsToSpec(spec);
     
     if (state.mode === 'spec') {
-      const specContent = stringifyYaml(specWithUUIDs);
-      const specErrors = validateSpec(specWithUUIDs).map(msg => ({
+      // For spec editing, we show the raw spec without UUIDs
+      const specErrors = validateSpec(spec).map(msg => ({
         message: msg,
         severity: 'error' as const
       }));
       
       return {
-        content: specContent,
-        spec: specWithUUIDs,
+        content: spec.rawSpec,
+        spec,
         validationErrors: specErrors
       };
     } else if (state.databaseName) {
@@ -52,7 +51,7 @@ export class EditorService {
           throw new Error(`Record "${state.recordId}" not found`);
         }
         
-        const recordErrors = validateRecord(record, database).map(msg => ({
+        const recordErrors = validateRecord(record, spec.databases[state.databaseName]).map(msg => ({
           message: msg,
           severity: 'error' as const
         }));
@@ -69,7 +68,7 @@ export class EditorService {
         const allErrors: ValidationError[] = [];
         
         records.forEach((record, index) => {
-          const errors = validateRecord(record, database);
+          const errors = validateRecord(record, spec.databases[state.databaseName!]);
           errors.forEach(msg => {
             allErrors.push({
               message: `Record at index ${index}: ${msg}`,
@@ -99,7 +98,7 @@ export class EditorService {
         if (errors.length > 0) {
           throw new Error(`Invalid spec: ${errors.join(', ')}`);
         }
-        await fileSystem.saveSpec(data);
+        await fileSystem.saveSpec(content);
       } else if (state.databaseName) {
         if (state.recordId) {
           const spec = await fileSystem.loadSpec();
@@ -148,27 +147,17 @@ export class EditorService {
     await fileSystem.deleteRecord(databaseName, recordId);
   }
 
-  async createNewDatabase(name: string, fields: FieldDef[]): Promise<void> {
-    await fileSystem.createDatabase(name, fields);
-  }
-
-  async deleteDatabase(name: string): Promise<void> {
-    await fileSystem.deleteDatabase(name);
-  }
-
   async getValidationErrors(content: string, state: EditorState): Promise<ValidationError[]> {
     try {
       const data = parseYaml(content);
       
       if (state.mode === 'spec') {
-        const specWithUUIDs = addUUIDFieldsToSpec(data);
-        const errors = validateSpec(specWithUUIDs).map(msg => ({
+        const errors = validateSpec(data).map(msg => ({
           message: msg,
           severity: 'error' as const
         }));
         return errors;
       } else if (state.databaseName && state.recordId) {
-        // For single record, validate against spec
         const spec = await fileSystem.loadSpec();
         const database = spec.databases[state.databaseName];
         if (database) {

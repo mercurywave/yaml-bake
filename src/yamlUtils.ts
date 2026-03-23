@@ -148,6 +148,11 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
     }
   }
   
+  // Additional validation: check that record has an id field
+  if (!record.id) {
+    errors.push('Record must have an id field');
+  }
+  
   return errors;
 }
 

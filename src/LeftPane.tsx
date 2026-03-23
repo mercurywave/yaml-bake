@@ -12,7 +12,6 @@ interface LeftPaneProps {
   handleDatabaseSelect: (databaseName: string) => void;
   handleRecordSelect: (recordId: string) => void;
   handleCreateRecord: () => void;
-  handleDeleteDatabase: (databaseName: string) => void;
   handleDeleteRecord: (recordId: string) => void;
 }
 
@@ -27,7 +26,6 @@ const LeftPane: React.FC<LeftPaneProps> = ({
   handleDatabaseSelect,
   handleRecordSelect,
   handleCreateRecord,
-  handleDeleteDatabase,
   handleDeleteRecord
 }) => {
   return (

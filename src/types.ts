@@ -28,8 +28,7 @@ export interface DatabaseDef {
 
 export interface Spec {
   databases: { [key: string]: DatabaseDef };
-  version?: string;
-  description?: string;
+  rawSpec: string;
 }
 
 export interface Record {

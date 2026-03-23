@@ -1,5 +1,5 @@
 import { Spec, DatabaseDef, Record, EditorMode, EditorState } from './types';
-import { parseYaml, stringifyYaml } from './yamlUtils';
+import { addUUIDFieldsToSpec, parseYaml, stringifyYaml } from './yamlUtils';
 
 declare global {
   interface Window {
@@ -62,15 +62,21 @@ export class FileSystemService {
       const fileHandle = await this.rootDir.getFileHandle(SPEC_FILE);
       const file = await fileHandle.getFile();
       const content = await file.text();
-      const spec = parseYaml(content || '') as Spec;
-      if (Object.keys(spec).length === 0) {
-        throw new Error('Empty spec file');
-      }
+      const spec = this.parseSpecYaml(content);
       this.specCache = spec;
       return spec;
     } catch (error) {
       throw new Error(`Failed to load spec.yaml: ${(error as Error).message}`);
     }
+  }
+
+  private parseSpecYaml(content: string) {
+    const spec = parseYaml(content || '') as Spec;
+    if (Object.keys(spec).length === 0) {
+      throw new Error('Empty spec file');
+    }
+    spec.rawSpec = content;
+    return addUUIDFieldsToSpec(spec);
   }
 
   async loadDatabase(databaseName: string): Promise<Record[]> {
@@ -104,12 +110,10 @@ export class FileSystemService {
     }
   }
 
-  async saveSpec(spec: Spec): Promise<void> {
+  async saveSpec(content: string): Promise<void> {
     if (!this.rootDir) {
       throw new Error('No folder selected');
     }
-
-    const content = stringifyYaml(spec);
     
     try {
       let fileHandle: FileSystemFileHandle;
@@ -124,7 +128,7 @@ export class FileSystemService {
       await writable.write(content);
       await writable.close();
       
-      this.specCache = spec;
+      this.specCache = this.parseSpecYaml(content);
     } catch (error) {
       throw new Error(`Failed to save spec.yaml: ${(error as Error).message}`);
     }
@@ -155,70 +159,6 @@ export class FileSystemService {
       this.databaseCache.set(databaseName, content);
     } catch (error) {
       throw new Error(`Failed to save ${fileName}: ${(error as Error).message}`);
-    }
-  }
-
-  async createDatabase(databaseName: string, fields: any[]): Promise<void> {
-    if (!this.rootDir) {
-      throw new Error('No folder selected');
-    }
-
-    const spec = await this.loadSpec();
-    
-    // Convert array of fields to object - fields should be in { key: fieldDef } format
-    const fieldsObject: { [key: string]: any } = {};
-    fields.forEach(field => {
-      // Since we removed the 'name' property, we need to construct the fields object properly
-      // fields are passed as { key: fieldDef } pairs
-      const fieldKeys = Object.keys(field);
-      if (fieldKeys.length > 0) {
-        const key = fieldKeys[0];
-        fieldsObject[key] = field[key];
-      }
-    });
-    
-    // Ensure id field is present for all databases
-    if (!fieldsObject.id) {
-      fieldsObject.id = {
-        type: 'uuid',
-        required: true,
-        unique: true
-      };
-    }
-    
-    const newDatabase: any = {
-      name: databaseName,
-      fields: fieldsObject
-    };
-    
-    spec.databases[databaseName] = newDatabase;
-    await this.saveSpec(spec);
-    
-    const records: Record[] = [];
-    this.databases.set(databaseName, records);
-    
-    const content = stringifyYaml(records);
-    const fileName = `${databaseName}.yaml`;
-    
-    await this.rootDir.getFileHandle(fileName, { create: true });
-  }
-
-  async deleteDatabase(databaseName: string): Promise<void> {
-    if (!this.rootDir) {
-      throw new Error('No folder selected');
-    }
-
-    const spec = await this.loadSpec();
-    delete spec.databases[databaseName];
-    await this.saveSpec(spec);
-    
-    this.databases.delete(databaseName);
-    this.databaseCache.delete(databaseName);
-    
-    try {
-      await this.rootDir.removeEntry(`${databaseName}.yaml`);
-    } catch {
-      // File might not exist
     }
   }
 
