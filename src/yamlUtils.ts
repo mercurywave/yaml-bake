@@ -156,6 +156,36 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
   return errors;
 }
 
+export function generateDisplayName(record: Record, database: DatabaseDef): string {
+  // If there's no display property, return a default name
+  if (!database.display) {
+    // Default to using the first string field or id if available
+    for (const fieldName in database.fields) {
+      const field = database.fields[fieldName];
+      if (field.type === 'string' && record[fieldName]) {
+        return record[fieldName];
+      }
+    }
+    // If no string fields, return id
+    return record.id || 'Unnamed Record';
+  }
+
+  // Parse the display template and replace fields
+  let displayName = database.display;
+  
+  // Replace placeholders like {fieldName} with actual field values
+  const regex = /\{([^}]+)\}/g;
+  displayName = displayName.replace(regex, (match, fieldName) => {
+    const value = record[fieldName];
+    if (value === undefined || value === null) {
+      return '';
+    }
+    return String(value);
+  });
+  
+  return displayName;
+}
+
 function isValidType(value: any, type: string): boolean {
   switch (type) {
     case 'string':

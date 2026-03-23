@@ -1,6 +1,7 @@
 # School Database Schema
 databases:
   students:
+    display: "{firstName} {lastName}"
     fields:
       firstName:
         type: string

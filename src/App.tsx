@@ -3,7 +3,7 @@ import { fileSystem } from './fileSystem';
 import { EditorData, EditorService } from './editorService';
 import { Spec, DatabaseDef, FieldDef, Record, EditorState } from './types';
 import MonacoEditor from '@monaco-editor/react';
-import { parseYaml } from './yamlUtils';
+import { parseYaml, generateDisplayName } from './yamlUtils';
 import LeftPane from './LeftPane';
 import RightPane from './RightPane';
 
@@ -69,10 +69,14 @@ function App() {
         } else {
           // Load records for this database
           const records = await fileSystem.loadDatabase(state.databaseName);
+          const spec = await fileSystem.loadSpec();
+          const database = spec.databases[state.databaseName];
+          
           setRecordList(records.map(record => ({
             id: record.id || '',
             warning: false,
-            error: false
+            error: false,
+            displayName: database ? generateDisplayName(record, database) : record.id || ''
           })));
         }
       }

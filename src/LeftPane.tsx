@@ -4,7 +4,7 @@ import { DatabaseDef } from './types';
 interface LeftPaneProps {
   folderSelected: boolean;
   databaseList: { name: string; count: number; hasErrors: boolean }[];
-  recordList: { id: string; warning: boolean; error: boolean }[];
+  recordList: { id: string; warning: boolean; error: boolean; displayName?: string }[];
   selectedDatabase: string | null;
   selectedRecordId: string | null;
   fileSystem: any;
@@ -101,7 +101,7 @@ const LeftPane: React.FC<LeftPaneProps> = ({
                   onClick={() => handleRecordSelect(record.id)}
                 >
                   <span className="record-icon">📄</span>
-                  <span className="record-id">{record.id}</span>
+                  <span className="record-id">{record.displayName || record.id}</span>
                 </div>
               ))
             ) : (
