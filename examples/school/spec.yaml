@@ -12,12 +12,6 @@ databases:
       grade:
         type: number
         required: true
-      classroom:
-        type: reference
-        target: classrooms
-      teacher:
-        type: reference
-        target: teachers
   teachers:
     fields:
       firstName:
@@ -28,7 +22,6 @@ databases:
         required: true
       subject:
         type: string
-        required: true
       classroom:
         type: reference
         target: classrooms
