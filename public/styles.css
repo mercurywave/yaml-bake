@@ -1,0 +1,296 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  overflow: hidden;
+  height: 100vh;
+}
+.app {
+  display: flex;
+  height: 100vh;
+}
+.main-container {
+  display: flex;
+  flex: 1;
+  height: 100vh;
+}
+.left-pane {
+  width: 300px;
+  background: #181825;
+  border-right: 1px solid #45475a;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #45475a;
+}
+.sidebar-header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #89b4fa;
+}
+.folder-path {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #a6adc8;
+  font-family: monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.database-selector {
+  padding: 16px;
+  border-bottom: 1px solid #45475a;
+}
+.database-selector h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #89b4fa;
+}
+.database-list {
+  margin-top: 8px;
+}
+.database-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 4px;
+}
+.database-item:hover {
+  background: #313244;
+}
+.database-item.active {
+  background: #45475a;
+}
+.database-icon {
+  font-size: 14px;
+  margin-right: 8px;
+  color: #f38ba8;
+}
+.database-name {
+  flex: 1;
+  font-size: 13px;
+  color: #cdd6f4;
+}
+.record-count {
+  font-size: 11px;
+  color: #a6adc8;
+}
+.database-item.warning .database-name {
+  color: #f9e2af;
+}
+.database-item.error .database-name {
+  color: #f38ba8;
+}
+.records-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+.records-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.records-header h3 {
+  font-size: 14px;
+  color: #89b4fa;
+}
+.record-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.record-item {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #a6adc8;
+  cursor: pointer;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.2s;
+  margin-bottom: 4px;
+}
+.record-item:hover {
+  background: #313244;
+}
+.record-item.active {
+  background: #45475a;
+}
+.record-item.warning {
+  color: #f9e2af;
+}
+.record-item.error {
+  color: #f38ba8;
+}
+.no-records {
+  padding: 16px;
+  text-align: center;
+  color: #a6adc8;
+  font-size: 12px;
+}
+.right-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #1e1e2e;
+}
+.toolbar {
+  padding: 12px 20px;
+  border-bottom: 1px solid #45475a;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.toolbar h2 {
+  font-size: 16px;
+  color: #89b4fa;
+}
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-primary {
+  background: #89b4fa;
+  color: #1e1e2e;
+}
+.btn-primary:hover {
+  background: #b4befe;
+}
+.btn-secondary {
+  background: #45475a;
+  color: #cdd6f4;
+}
+.btn-secondary:hover {
+  background: #585b70;
+}
+.btn-danger {
+  background: #f38ba8;
+  color: #1e1e2e;
+}
+.btn-danger:hover {
+  background: #fab387;
+}
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.editor-header {
+  padding: 8px 20px;
+  background: #181825;
+  border-bottom: 1px solid #45475a;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #a6adc8;
+}
+.editor-header .status {
+  margin-left: auto;
+}
+.status.valid { color: #a6e3a1; }
+.status.warning { color: #f9e2af; }
+.status.error { color: #f38ba8; }
+.editor-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.editor {
+  width: 100%;
+  height: 100%;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 20px;
+  border: none;
+  resize: none;
+  outline: none;
+  tab-size: 2;
+}
+.error-panel {
+  height: 200px;
+  background: #181825;
+  border-top: 1px solid #45475a;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+.error-panel h3 {
+  font-size: 13px;
+  margin-bottom: 12px;
+  color: #f38ba8;
+}
+.error-list {
+  list-style: none;
+}
+.error-item {
+  font-size: 12px;
+  font-family: monospace;
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  background: #313244;
+  border-radius: 4px;
+  border-left: 3px solid #f38ba8;
+}
+.error-item.warning {
+  border-left-color: #f9e2af;
+}
+.error-item.error {
+  border-left-color: #f38ba8;
+}
+.no-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #a6adc8;
+  text-align: center;
+}
+.no-selection h2 {
+  margin-bottom: 12px;
+  color: #89b4fa;
+}
+.no-selection p {
+  max-width: 400px;
+  line-height: 1.6;
+}
+.empty-db {
+  padding: 40px;
+  text-align: center;
+  color: #a6adc8;
+}
+.empty-db h3 {
+  color: #89b4fa;
+  margin-bottom: 8px;
+}
+.spec-link{
+  background: none;
+  border: none;
+}
