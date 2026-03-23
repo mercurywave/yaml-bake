@@ -125,6 +125,10 @@ function App() {
     }
   };
 
+  const handleSpecEdit = async () => {
+    await loadEditorData({ mode: 'spec' });
+  };
+
   const handleFormat = () => {
     if (editorContent) {
       const formatted = editorService.formatContent(editorContent);
@@ -165,6 +169,7 @@ function App() {
           handleRecordSelect={handleRecordSelect}
           handleCreateRecord={handleCreateRecord}
           handleDeleteRecord={handleDeleteRecord}
+          handleSpecEdit={handleSpecEdit}
         />
         
         <RightPane

@@ -13,6 +13,7 @@ interface LeftPaneProps {
   handleRecordSelect: (recordId: string) => void;
   handleCreateRecord: () => void;
   handleDeleteRecord: (recordId: string) => void;
+  handleSpecEdit: () => void;
 }
 
 const LeftPane: React.FC<LeftPaneProps> = ({
@@ -26,7 +27,8 @@ const LeftPane: React.FC<LeftPaneProps> = ({
   handleDatabaseSelect,
   handleRecordSelect,
   handleCreateRecord,
-  handleDeleteRecord
+  handleDeleteRecord,
+  handleSpecEdit
 }) => {
   return (
     <div className="left-pane">
@@ -48,7 +50,19 @@ const LeftPane: React.FC<LeftPaneProps> = ({
       </div>
       
       <div className="database-selector">
-        <h3>Databases</h3>
+        <h3>
+          Databases &nbsp;
+          {folderSelected && <button
+            className="spec-link"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSpecEdit();
+            }}
+            title="Edit spec file"
+          >
+            ⚙️
+          </button>}
+        </h3>
         {folderSelected && (
           <div className="database-list">
             {databaseList.map((db) => (
