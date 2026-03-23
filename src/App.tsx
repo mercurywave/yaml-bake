@@ -77,6 +77,7 @@ function App() {
           })));
         }
       }
+      setEditorState(state);
     } catch (error) {
       console.error('Failed to load data:', error);
       setValidationErrors([{ message: (error as Error).message, severity: 'error' }]);
