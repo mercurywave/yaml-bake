@@ -1,4 +1,8 @@
 - id: f0bde086-d631-4d80-80ff-1c5ec37a898f
-  firstName: "Harry"
-  lastName: "Potter"
-  grade: 6
+  firstName: Harry
+  lastName: Potter
+  grade: 7
+- id: f8629300-5d5f-45bd-87c6-4f50add6f113
+  firstName: Ron
+  lastName: Weasley
+  grade: 0
