@@ -79,6 +79,16 @@ export class FileSystemService {
     return addUUIDFieldsToSpec(spec);
   }
 
+  async loadAllDatabases(): Promise<{ [key: string]: Record[] }> {
+    let map: { [key: string]: Record[] } = {};
+    let spec = await this.loadSpec();
+    for (const dbName of Object.keys(spec.databases)) {
+      let db = await this.loadDatabase(dbName);
+      map[dbName] = db;
+    }
+    return map;
+  }
+
   async loadDatabase(databaseName: string): Promise<Record[]> {
     const cached = this.databases.get(databaseName);
     if (cached) {

@@ -43,14 +43,14 @@ function App() {
       setEditorData(data);
       setEditorContent(data.content);
       setValidationErrors(data.validationErrors.map(e => ({ message: e.message, severity: e.severity })));
+      const databases = await fileSystem.loadAllDatabases();
       
       if (state.mode === 'spec') {
         // Handle object database structure
-        const databases: { [key: string]: DatabaseDef } = data.spec?.databases ?? {};
         
         setDatabaseList(Object.keys(databases).map(key => ({
           name: key,
-          count: 0,
+          count: databases[key].length,
           hasErrors: false
         })));
         setRecordList([]);
@@ -58,10 +58,9 @@ function App() {
         setSelectedRecordId(null);
       } else if (state.databaseName) {
         setSelectedDatabase(state.databaseName);
-        const databases: { [key: string]: DatabaseDef } = data.spec?.databases ?? {};
         setDatabaseList(Object.keys(databases).map(k => ({
           name: k,
-          count: k === state.databaseName ? (Array.isArray(parseYaml(data.content || '[]')) ? parseYaml(data.content || '[]').length : 0) : 0,
+          count: databases[k].length,
           hasErrors: data.validationErrors.length > 0
         })));
         
@@ -140,11 +139,10 @@ function App() {
     const loadInitial = async () => {
       try {
         const spec = await fileSystem.loadSpec();
-        // Handle object database structure
-        const databases: { [key: string]: DatabaseDef } = spec?.databases ?? {};
+        const databases = await fileSystem.loadAllDatabases();
         setDatabaseList(Object.keys(databases).map(k => ({
           name: k,
-          count: 0,
+          count: databases[k].length,
           hasErrors: false
         })));
       } catch {
