@@ -1,8 +1,10 @@
 import React from 'react';
 import MonacoEditor from '@monaco-editor/react';
+import { EditorState } from './types';
+import { EditorData } from './editorService';
 
 interface RightPaneProps {
-  editorState: any;
+  editorState: EditorState;
   editorContent: string;
   validationErrors: any[];
   selectedDatabase: string | null;
@@ -13,7 +15,7 @@ interface RightPaneProps {
   handleCreateRecord: () => void;
   handleDeleteRecord: (recordId: string) => void;
   setEditorContent: (content: string) => void;
-  editorData: any;
+  editorData: EditorData | null;
   getValidationErrors: (content: string, state: any) => Promise<any[]>;
 }
 
@@ -36,9 +38,7 @@ const RightPane: React.FC<RightPaneProps> = ({
     <div className="right-pane">
       <div className="toolbar">
         <h2>
-          {editorState.mode === 'spec' 
-            ? 'spec.yaml' 
-            : `${selectedDatabase}${selectedRecordId ? ` - ${selectedRecordId}` : ''}`}
+          {editorState.displayName}
         </h2>
         
         <div className="toolbar-actions">

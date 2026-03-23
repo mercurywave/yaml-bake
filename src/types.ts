@@ -41,6 +41,7 @@ export type EditorMode = 'spec' | 'record';
 
 export interface EditorState {
   mode: EditorMode;
+  displayName: string;
   databaseName?: string;
   recordId?: string;
 }

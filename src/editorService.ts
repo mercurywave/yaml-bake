@@ -18,7 +18,7 @@ export interface EditorData {
 }
 
 export class EditorService {
-  private state: EditorState = { mode: 'spec' };
+  private state: EditorState = { mode: 'spec', displayName: 'spec' };
 
   async loadEditorData(state: EditorState): Promise<EditorData> {
     this.state = state;

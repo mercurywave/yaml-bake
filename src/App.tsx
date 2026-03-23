@@ -17,7 +17,7 @@ interface ValidationError {
 
 function App() {
   const [folderSelected, setFolderSelected] = useState(false);
-  const [editorState, setEditorState] = useState<EditorState>({ mode: 'spec' });
+  const [editorState, setEditorState] = useState<EditorState>({ mode: 'spec', displayName: 'spec' });
   const [editorData, setEditorData] = useState<EditorData | null>(null);
   const [editorContent, setEditorContent] = useState('');
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
@@ -25,14 +25,13 @@ function App() {
   const [recordList, setRecordList] = useState<{ id: string; warning: boolean; error: boolean }[]>([]);
   const [selectedDatabase, setSelectedDatabase] = useState<string | null>(null);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
-  const editorRef = useRef<HTMLTextAreaElement>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSelectFolder = async () => {
     const success = await fileSystem.selectFolder();
     if (success) {
       setFolderSelected(true);
-      await loadEditorData({ mode: 'spec' });
+      await loadEditorData({ mode: 'spec', displayName: 'spec' });
     }
   };
 
@@ -104,32 +103,39 @@ function App() {
   const handleDatabaseSelect = async (databaseName: string) => {
     setSelectedDatabase(databaseName);
     setSelectedRecordId(null);
-    await loadEditorData({ mode: 'record', databaseName });
+    await loadEditorData({ mode: 'record', displayName: databaseName, databaseName });
   };
 
   const handleRecordSelect = async (recordId: string) => {
     setSelectedRecordId(recordId);
+    const db = await fileSystem.loadDatabase(selectedDatabase!);
+    const dbDef = (await fileSystem.loadSpec()).databases[selectedDatabase!];
+    let record = db.find(r => r.id === recordId);
     if (selectedDatabase) {
-      await loadEditorData({ mode: 'record', databaseName: selectedDatabase, recordId });
+      await loadEditorData({
+        mode: 'record',
+        displayName: `${selectedDatabase} - ${(record ? generateDisplayName(record, dbDef) : '???')}`,
+        databaseName: selectedDatabase,
+        recordId });
     }
   };
 
   const handleCreateRecord = async () => {
     if (selectedDatabase) {
       await editorService.createNewRecord(selectedDatabase);
-      await loadEditorData({ mode: 'record', databaseName: selectedDatabase });
+      await loadEditorData({ mode: 'record', displayName: '[new record]', databaseName: selectedDatabase });
     }
   };
 
   const handleDeleteRecord = async (recordId: string) => {
     if (selectedDatabase && confirm('Delete this record?')) {
       await editorService.deleteRecord(selectedDatabase, recordId);
-      await loadEditorData({ mode: 'record', databaseName: selectedDatabase });
+      await loadEditorData({ mode: 'record', displayName: selectedDatabase, databaseName: selectedDatabase });
     }
   };
 
   const handleSpecEdit = async () => {
-    await loadEditorData({ mode: 'spec' });
+    await loadEditorData({ mode: 'spec', displayName: 'spec' });
   };
 
   const handleFormat = () => {
