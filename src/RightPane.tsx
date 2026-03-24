@@ -85,7 +85,7 @@ const RightPane: React.FC<RightPaneProps> = ({
             <MonacoEditor
               height="100%"
               language="yaml"
-              value={editorContent}
+              defaultValue={editorContent}
               onChange={(value) => {
                 if (value !== undefined) {
                   setEditorContent(value);
