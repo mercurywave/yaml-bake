@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fileSystem } from './fileSystem';
 import { EditorData, EditorService } from './editorService';
 import { Spec, DatabaseDef, FieldDef, Record, EditorState } from './types';
@@ -6,6 +6,7 @@ import MonacoEditor from '@monaco-editor/react';
 import { parseYaml, generateDisplayName } from './yamlUtils';
 import LeftPane from './LeftPane';
 import RightPane from './RightPane';
+import ToastManager from './ToastManager';
 
 const editorService = new EditorService();
 
@@ -94,7 +95,7 @@ function App() {
     try {
       await editorService.saveEditorData(editorState, editorContent);
       setValidationErrors([]);
-      alert('Saved successfully!');
+      (window as any).addToast(`Saved ${editorState.displayName}!`, 'success');
     } catch (error) {
       setValidationErrors([{ message: (error as Error).message, severity: 'error' }]);
     }
@@ -196,6 +197,7 @@ function App() {
           getValidationErrors={editorService.getValidationErrors}
         />
       </div>
+      <ToastManager />
     </div>
   );
 }
