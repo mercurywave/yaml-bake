@@ -1,0 +1,50 @@
+# Hospital Database Schema
+databases:
+  patients:
+    display: "{firstName} {lastName}"
+    fields:
+      firstName:
+        type: string
+        required: true
+      lastName:
+        type: string
+        required: true
+      diagnosis:
+        type: object
+        fields:
+          code:
+            type: string
+          location:
+            type: object
+            fields:
+              laterality:
+                type: string
+              region:
+                type: string
+              position:
+                type: string
+  doctors:
+    display: "{firstName} {lastName}"
+    fields:
+      firstName:
+        type: string
+        required: true
+      lastName:
+        type: string
+        required: true
+      specialty:
+        type: string
+  medications:
+    fields:
+      name:
+        type: string
+        required: true
+      dose:
+        type: object
+        fields:
+          value:
+            type: number
+            required: true
+          unit:
+            type: string
+            required: true
