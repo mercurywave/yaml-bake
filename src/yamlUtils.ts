@@ -15,7 +15,7 @@ export function stringifyYaml(data: any): string {
 /**
  * Validates field definitions recursively
  */
-function validateFields(errors: string[], parentName: string, fields: { [key: string]: FieldDef }): void {
+function validateFields(spec: Spec, errors: string[], parentName: string, fields: { [key: string]: FieldDef }): void {
   for (const fieldName in fields) {
     const field = fields[fieldName];
     if (!field.type) {
@@ -24,8 +24,14 @@ function validateFields(errors: string[], parentName: string, fields: { [key: st
     if (field.type === 'array' && !field.items) {
       errors.push(`${parentName} field "${fieldName}" of type "array" missing "items"`);
     }
-    if (field.type === 'object' && !field.fields) {
-      errors.push(`${parentName} field "${fieldName}" of type "object" missing "fields"`);
+    if (field.type === 'object' && !field.fields && !field.typeDef) {
+      errors.push(`${parentName} field "${fieldName}" of type "object" missing "fields" or "typeDef"`);
+    }
+    if (field.type === 'object' && field.typeDef) {
+      const typeDef = spec.types[field.typeDef];
+      if(!typeDef) {
+        errors.push(`${parentName} field "${fieldName}" of has unknown "typeDef"`);
+      }
     }
     if (field.type === 'enum' && !field.options) {
       errors.push(`${parentName} field "${fieldName}" of type "enum" missing "options"`);
@@ -57,7 +63,7 @@ export function validateSpec(spec: Spec): string[] {
     if (!db.fields || typeof db.fields !== 'object' || Array.isArray(db.fields)) {
       errors.push(`Database "${dbName}" missing "fields" object`);
     } else {
-      validateFields(errors, `Database "${dbName}"`, db.fields);
+      validateFields(spec, errors, `Database "${dbName}"`, db.fields);
     }
   }
   
@@ -71,7 +77,7 @@ export function validateSpec(spec: Spec): string[] {
       if (!typeDef.fields || typeof typeDef.fields !== 'object' || Array.isArray(typeDef.fields)) {
         errors.push(`Type "${typeName}" missing "fields" object`);
       } else {
-        validateFields(errors, `Type "${typeName}"`, typeDef.fields);
+        validateFields(spec, errors, `Type "${typeName}"`, typeDef.fields);
       }
     }
   }
@@ -114,7 +120,7 @@ export function cleanupSpec(spec: Spec): Spec {
 /**
  * Validates a single field value
  */
-function validateSingleFieldValue(errors: string[], parentName: string, fieldName: string, field: FieldDef, value: any): void {
+function validateSingleFieldValue(spec: Spec, errors: string[], parentName: string, fieldName: string, field: FieldDef, value: any): void {
   if (value === undefined || value === null) {
     if (field.required) {
       errors.push(`Field "${parentName}.${fieldName}" is required`);
@@ -143,7 +149,12 @@ function validateSingleFieldValue(errors: string[], parentName: string, fieldNam
       errors.push(`Field "${parentName}.${fieldName}" must be an object`);
     } else if (field.fields) {
       // Check nested fields recursively
-      validateFieldValues(errors, `${parentName}.${fieldName}`, field.fields, value);
+      validateFieldValues(spec, errors, `${parentName}.${fieldName}`, field.fields, value);
+    } else if(field.typeDef) {
+      const typeDef = spec.types[field.typeDef!];
+      if (typeDef){
+        validateFieldValues(spec, errors, `${parentName}.${fieldName}`, typeDef.fields, value);
+      }
     }
   } else if (field.type === 'enum' && field.options && !field.options.includes(value)) {
     errors.push(`Field "${parentName}.${fieldName}" must be one of: ${field.options.join(', ')}`);
@@ -157,11 +168,11 @@ function validateSingleFieldValue(errors: string[], parentName: string, fieldNam
 /**
  * Validates field values recursively
  */
-function validateFieldValues(errors: string[], parentName: string, fields: { [key: string]: FieldDef }, record: any): void {
+function validateFieldValues(spec: Spec, errors: string[], parentName: string, fields: { [key: string]: FieldDef }, record: any): void {
   for (const fieldName in fields) {
     const field = fields[fieldName];
     const value = record[fieldName];
-    validateSingleFieldValue(errors, parentName, fieldName, field, value);
+    validateSingleFieldValue(spec, errors, parentName, fieldName, field, value);
   }
   for (const fieldName in record) {
     if(!fields.hasOwnProperty(fieldName)) {
@@ -170,7 +181,7 @@ function validateFieldValues(errors: string[], parentName: string, fields: { [ke
   }
 }
 
-export function validateRecord(record: any, database: DatabaseDef): string[] {
+export function validateRecord(spec: Spec, record: any, database: DatabaseDef): string[] {
   const errors: string[] = [];
   
   if (!record || typeof record !== 'object') {
@@ -179,7 +190,7 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
   }
   
   // Validate all fields
-  validateFieldValues(errors, '', database.fields, record);
+  validateFieldValues(spec, errors, '', database.fields, record);
   
   // Additional validation: check that record has an id field
   if (!record.id) {

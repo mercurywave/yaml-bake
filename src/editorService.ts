@@ -51,7 +51,7 @@ export class EditorService {
           throw new Error(`Record "${state.recordId}" not found`);
         }
         
-        const recordErrors = validateRecord(record, spec.databases[state.databaseName]).map(msg => ({
+        const recordErrors = validateRecord(spec, record, spec.databases[state.databaseName]).map(msg => ({
           message: msg,
           severity: 'error' as const
         }));
@@ -68,7 +68,7 @@ export class EditorService {
         const allErrors: ValidationError[] = [];
         
         records.forEach((record, index) => {
-          const errors = validateRecord(record, spec.databases[state.databaseName!]);
+          const errors = validateRecord(spec, record, spec.databases[state.databaseName!]);
           errors.forEach(msg => {
             allErrors.push({
               message: `Record at index ${index}: ${msg}`,
@@ -107,7 +107,7 @@ export class EditorService {
             throw new Error(`Database "${state.databaseName}" not found`);
           }
           
-          const errors = validateRecord(data, database);
+          const errors = validateRecord(spec, data, database);
           if (errors.length > 0) {
             throw new Error(`Invalid record: ${errors.join(', ')}`);
           }
@@ -125,7 +125,7 @@ export class EditorService {
           }
           
           data.forEach((record: Record, index: number) => {
-            const errors = validateRecord(record, database);
+            const errors = validateRecord(spec, record, database);
             if (errors.length > 0) {
               throw new Error(`Record at index ${index} is invalid: ${errors.join(', ')}`);
             }
@@ -161,7 +161,7 @@ export class EditorService {
         const spec = await fileSystem.loadSpec();
         const database = spec.databases[state.databaseName];
         if (database) {
-          const errors = validateRecord(data, database).map(msg => ({
+          const errors = validateRecord(spec, data, database).map(msg => ({
             message: msg,
             severity: 'error' as const
           }));

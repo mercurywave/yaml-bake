@@ -19,6 +19,7 @@ export interface FieldDef {
   target?: string;
   description?: string;
   default?: any;
+  typeDef?: string;
 }
 
 export interface DatabaseDef {

@@ -32,8 +32,21 @@ databases:
       lastName:
         type: string
         required: true
-      specialty:
+      credentials:
+        type: object
+        typeDef: TCredentials
+  nurses:
+    display: "{firstName} {lastName}"
+    fields:
+      firstName:
         type: string
+        required: true
+      lastName:
+        type: string
+        required: true
+      credentials:
+        type: object
+        typeDef: TCredentials
   medications:
     fields:
       name:
@@ -48,3 +61,12 @@ databases:
           unit:
             type: string
             required: true
+types:
+  TCredentials:
+    fields:
+      license:
+        type: string
+      abbreviation:
+        type: string
+      specialty:
+        type: string
