@@ -1,5 +1,5 @@
 import { Spec, DatabaseDef, Record, EditorMode, EditorState } from './types';
-import { addUUIDFieldsToSpec, parseYaml, stringifyYaml } from './yamlUtils';
+import { cleanupSpec, parseYaml, stringifyYaml } from './yamlUtils';
 
 declare global {
   interface Window {
@@ -70,13 +70,17 @@ export class FileSystemService {
     }
   }
 
+  loadCachedSpec(): Spec | null {
+    return this.specCache;
+  }
+
   private parseSpecYaml(content: string) {
     const spec = parseYaml(content || '') as Spec;
     if (Object.keys(spec).length === 0) {
       throw new Error('Empty spec file');
     }
     spec.rawSpec = content;
-    return addUUIDFieldsToSpec(spec);
+    return cleanupSpec(spec);
   }
 
   async loadAllDatabases(): Promise<{ [key: string]: Record[] }> {

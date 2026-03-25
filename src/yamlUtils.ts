@@ -12,7 +12,31 @@ export function stringifyYaml(data: any): string {
   return yaml.stringify(data);
 }
 
-export function validateSpec(spec: any): string[] {
+/**
+ * Validates field definitions recursively
+ */
+function validateFields(errors: string[], parentName: string, fields: { [key: string]: FieldDef }): void {
+  for (const fieldName in fields) {
+    const field = fields[fieldName];
+    if (!field.type) {
+      errors.push(`${parentName} field "${fieldName}" missing "type"`);
+    }
+    if (field.type === 'array' && !field.items) {
+      errors.push(`${parentName} field "${fieldName}" of type "array" missing "items"`);
+    }
+    if (field.type === 'object' && !field.fields) {
+      errors.push(`${parentName} field "${fieldName}" of type "object" missing "fields"`);
+    }
+    if (field.type === 'enum' && !field.options) {
+      errors.push(`${parentName} field "${fieldName}" of type "enum" missing "options"`);
+    }
+    if (field.type === 'reference' && !field.target) {
+      errors.push(`${parentName} field "${fieldName}" of type "reference" missing "target"`);
+    }
+  }
+}
+
+export function validateSpec(spec: Spec): string[] {
   const errors: string[] = [];
   
   // Ensure spec is an object
@@ -33,24 +57,21 @@ export function validateSpec(spec: any): string[] {
     if (!db.fields || typeof db.fields !== 'object' || Array.isArray(db.fields)) {
       errors.push(`Database "${dbName}" missing "fields" object`);
     } else {
-      // Check each field in the fields object
-      for (const fieldName in db.fields) {
-        const field = db.fields[fieldName];
-        if (!field.type) {
-          errors.push(`Database "${dbName}" field "${fieldName}" missing "type"`);
-        }
-        if (field.type === 'array' && !field.items) {
-          errors.push(`Database "${dbName}" field "${fieldName}" of type "array" missing "items"`);
-        }
-        if (field.type === 'object' && !field.fields) {
-          errors.push(`Database "${dbName}" field "${fieldName}" of type "object" missing "fields"`);
-        }
-        if (field.type === 'enum' && !field.options) {
-          errors.push(`Database "${dbName}" field "${fieldName}" of type "enum" missing "options"`);
-        }
-        if (field.type === 'reference' && !field.target) {
-          errors.push(`Database "${dbName}" field "${fieldName}" of type "reference" missing "target"`);
-        }
+      validateFields(errors, `Database "${dbName}"`, db.fields);
+    }
+  }
+  
+  // Ensure types exists and is an object
+  if (spec.types && (typeof spec.types !== 'object' || Array.isArray(spec.types))) {
+    errors.push('Spec "types" must be an object');
+  } else if (spec.types) {
+    // Check each type in the types object
+    for (const typeName in spec.types) {
+      const typeDef = spec.types[typeName];
+      if (!typeDef.fields || typeof typeDef.fields !== 'object' || Array.isArray(typeDef.fields)) {
+        errors.push(`Type "${typeName}" missing "fields" object`);
+      } else {
+        validateFields(errors, `Type "${typeName}"`, typeDef.fields);
       }
     }
   }
@@ -58,9 +79,12 @@ export function validateSpec(spec: any): string[] {
   return errors;
 }
 
-export function addUUIDFieldsToSpec(spec: Spec): Spec {
+export function cleanupSpec(spec: Spec): Spec {
   // Create a copy of the spec to avoid modifying the original
   const updatedSpec = JSON.parse(JSON.stringify(spec));
+
+  updatedSpec.databases ??= {};
+  updatedSpec.types ??= {};
   
   // For each database, ensure it has a UUID field
   for (const dbName in updatedSpec.databases) {

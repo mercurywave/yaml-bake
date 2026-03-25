@@ -1,6 +1,6 @@
 import { Spec, DatabaseDef, FieldDef, Record, EditorState } from './types';
 import { fileSystem } from './fileSystem';
-import { parseYaml, stringifyYaml, validateSpec, validateRecord, addUUIDFieldsToSpec } from './yamlUtils';
+import { parseYaml, stringifyYaml, validateSpec, validateRecord, cleanupSpec } from './yamlUtils';
 
 export interface ValidationError {
   message: string;
