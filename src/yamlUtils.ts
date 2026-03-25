@@ -111,6 +111,65 @@ export function cleanupSpec(spec: Spec): Spec {
   return updatedSpec;
 }
 
+/**
+ * Validates a single field value
+ */
+function validateSingleFieldValue(errors: string[], parentName: string, fieldName: string, field: FieldDef, value: any): void {
+  if (value === undefined || value === null) {
+    if (field.required) {
+      errors.push(`Field "${parentName}.${fieldName}" is required`);
+    }
+    return;
+  }
+  
+  if (field.type === 'string' && typeof value !== 'string') {
+    errors.push(`Field "${parentName}.${fieldName}" must be a string`);
+  } else if (field.type === 'number' && typeof value !== 'number') {
+    errors.push(`Field "${parentName}.${fieldName}" must be a number`);
+  } else if (field.type === 'boolean' && typeof value !== 'boolean') {
+    errors.push(`Field "${parentName}.${fieldName}" must be a boolean`);
+  } else if (field.type === 'array') {
+    if (!Array.isArray(value)) {
+      errors.push(`Field "${parentName}.${fieldName}" must be an array`);
+    } else if (field.items) {
+      value.forEach((item: any, idx: number) => {
+        if (!isValidType(item, field.items!.type)) {
+          errors.push(`Field "${parentName}.${fieldName}" item at index ${idx} is invalid`);
+        }
+      });
+    }
+  } else if (field.type === 'object') {
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) {
+      errors.push(`Field "${parentName}.${fieldName}" must be an object`);
+    } else if (field.fields) {
+      // Check nested fields recursively
+      validateFieldValues(errors, `${parentName}.${fieldName}`, field.fields, value);
+    }
+  } else if (field.type === 'enum' && field.options && !field.options.includes(value)) {
+    errors.push(`Field "${parentName}.${fieldName}" must be one of: ${field.options.join(', ')}`);
+  } else if (field.type === 'reference' && field.target) {
+    if (typeof value !== 'string') {
+      errors.push(`Field "${parentName}.${fieldName}" must be a string (reference ID)`);
+    }
+  }
+}
+
+/**
+ * Validates field values recursively
+ */
+function validateFieldValues(errors: string[], parentName: string, fields: { [key: string]: FieldDef }, record: any): void {
+  for (const fieldName in fields) {
+    const field = fields[fieldName];
+    const value = record[fieldName];
+    validateSingleFieldValue(errors, parentName, fieldName, field, value);
+  }
+  for (const fieldName in record) {
+    if(!fields.hasOwnProperty(fieldName)) {
+      errors.push(`Field "${parentName}.${fieldName}" is not defined`);
+    }
+  }
+}
+
 export function validateRecord(record: any, database: DatabaseDef): string[] {
   const errors: string[] = [];
   
@@ -119,58 +178,8 @@ export function validateRecord(record: any, database: DatabaseDef): string[] {
     return errors;
   }
   
-  // Check each field in the fields object, using the key as the field name
-  for (const fieldName in database.fields) {
-    const field = database.fields[fieldName];
-    if (record[fieldName] === undefined || record[fieldName] === null) {
-      if (field.required) {
-        errors.push(`Field "${fieldName}" is required`);
-      }
-      continue;
-    }
-    
-    const value = record[fieldName];
-    
-    if (field.type === 'string' && typeof value !== 'string') {
-      errors.push(`Field "${fieldName}" must be a string`);
-    } else if (field.type === 'number' && typeof value !== 'number') {
-      errors.push(`Field "${fieldName}" must be a number`);
-    } else if (field.type === 'boolean' && typeof value !== 'boolean') {
-      errors.push(`Field "${fieldName}" must be a boolean`);
-    } else if (field.type === 'array') {
-      if (!Array.isArray(value)) {
-        errors.push(`Field "${fieldName}" must be an array`);
-      } else if (field.items) {
-        value.forEach((item: any, idx: number) => {
-          if (!isValidType(item, field.items!.type)) {
-            errors.push(`Field "${fieldName}" item at index ${idx} is invalid`);
-          }
-        });
-      }
-    } else if (field.type === 'object') {
-      if (typeof value !== 'object' || Array.isArray(value) || value === null) {
-        errors.push(`Field "${fieldName}" must be an object`);
-      } else if (field.fields) {
-        // Check nested fields
-        for (const nestedFieldName in field.fields) {
-          const nestedField = field.fields[nestedFieldName];
-          if (nestedFieldName in value) {
-            if (!isValidType(value[nestedFieldName], nestedField.type)) {
-              errors.push(`Field "${fieldName}.${nestedFieldName}" has invalid type`);
-            }
-          } else if (nestedField.required) {
-            errors.push(`Field "${fieldName}.${nestedFieldName}" is required`);
-          }
-        }
-      }
-    } else if (field.type === 'enum' && field.options && !field.options.includes(value)) {
-      errors.push(`Field "${fieldName}" must be one of: ${field.options.join(', ')}`);
-    } else if (field.type === 'reference' && field.target) {
-      if (typeof value !== 'string') {
-        errors.push(`Field "${fieldName}" must be a string (reference ID)`);
-      }
-    }
-  }
+  // Validate all fields
+  validateFieldValues(errors, '', database.fields, record);
   
   // Additional validation: check that record has an id field
   if (!record.id) {
