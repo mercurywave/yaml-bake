@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { fileSystem } from './fileSystem';
-import { EditorData, EditorService } from './editorService';
-import { Spec, DatabaseDef, FieldDef, Record, EditorState } from './types';
+import { EditorService } from './editorService';
+import { Spec, DatabaseDef, FieldDef, Record, EditorState, EditorData } from './types';
 import MonacoEditor from '@monaco-editor/react';
 import { parseYaml, generateDisplayName } from './yamlUtils';
 import LeftPane from './LeftPane';
 import RightPane from './RightPane';
 import ToastManager from './ToastManager';
+import './specEditorService';
+import './recordEditorService';
 
 const editorService = new EditorService();
 

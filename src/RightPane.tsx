@@ -1,7 +1,6 @@
 import React from 'react';
 import MonacoEditor from '@monaco-editor/react';
-import { EditorState } from './types';
-import { EditorData } from './editorService';
+import { EditorState, EditorData } from './types';
 
 interface RightPaneProps {
   editorState: EditorState;

@@ -51,3 +51,18 @@ export interface EditorState {
   databaseName?: string;
   recordId?: string;
 }
+
+export interface ValidationError {
+  message: string;
+  severity: 'error' | 'warning';
+  field?: string;
+  line?: number;
+}
+
+export interface EditorData {
+  content: string;
+  spec?: Spec;
+  database?: DatabaseDef;
+  record?: Record;
+  validationErrors: ValidationError[];
+}
