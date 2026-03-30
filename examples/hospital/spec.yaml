@@ -9,6 +9,9 @@ databases:
       lastName:
         type: string
         required: true
+      admitting:
+        type: reference
+        target: doctors
       diagnosis:
         type: object
         fields:
