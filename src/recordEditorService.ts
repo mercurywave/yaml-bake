@@ -1,6 +1,7 @@
 import { Spec, DatabaseDef, Record, EditorState } from './types';
 import { fileSystem } from './fileSystem';
-import { parseYaml, stringifyYaml, validateSpec, validateRecord } from './yamlUtils';
+import { parseYaml, stringifyYaml } from './yamlUtils';
+import { validateRecord } from './dataValidator';
 
 export interface ValidationError {
   message: string;

@@ -1,5 +1,6 @@
 import { Spec, DatabaseDef, Record, EditorMode, EditorState } from './types';
-import { cleanupSpec, parseYaml, stringifyYaml } from './yamlUtils';
+import { parseYaml, stringifyYaml } from './yamlUtils';
+import { cleanupSpec, validateSpec } from './specValidator';
 
 declare global {
   interface Window {

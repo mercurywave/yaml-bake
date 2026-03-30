@@ -1,6 +1,7 @@
 import { Spec, DatabaseDef, Record, EditorState } from './types';
 import { fileSystem } from './fileSystem';
-import { parseYaml, stringifyYaml, validateSpec, validateRecord } from './yamlUtils';
+import { parseYaml, stringifyYaml } from './yamlUtils';
+import { validateSpec } from './specValidator';
 
 export interface ValidationError {
   message: string;
@@ -62,15 +63,6 @@ export class SpecEditorService {
         message: 'Invalid JSON/YAML syntax',
         severity: 'error' as const
       }];
-    }
-  }
-
-  formatContent(content: string): string {
-    try {
-      const data = parseYaml(content);
-      return stringifyYaml(data);
-    } catch {
-      return content;
     }
   }
 }
