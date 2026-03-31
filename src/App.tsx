@@ -100,6 +100,21 @@ function App() {
       setValidationErrors(result.errors);
       if(result.success){
         (window as any).addToast(`Saved ${editorState.displayName}!`, 'success');
+      } else {
+        // If save failed due to validation errors, prompt user to force save
+        if (result.errors.length > 0) {
+          // Add a small delay to allow errors to be displayed before showing confirmation
+          setTimeout(() => {
+            const shouldForceSave = window.confirm('Some validations failed. Do you want to force save anyway?');
+            if (shouldForceSave) {
+              editorService.forceSaveEditorData(editorState, editorContent).then(forceResult => {
+                if(forceResult.success){
+                  (window as any).addToast(`Force saved ${editorState.displayName}!`, 'success');
+                }
+              });
+            }
+          }, 100);
+        }
       }
     } catch (error) {
       setValidationErrors([{ message: (error as Error).message, severity: 'error' }]);
