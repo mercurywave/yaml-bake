@@ -70,4 +70,5 @@ export interface EditorData {
 export interface SaveResult {
   success: boolean;
   errors: ValidationError[];
+  noChange?: boolean;
 }

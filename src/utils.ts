@@ -7,6 +7,14 @@ export function makeSaveSuccess(): SaveResult {
   };
 }
 
+export function makeSaveNoChange(): SaveResult {
+  return {
+    success: true,
+    errors: [],
+    noChange: true
+  };
+}
+
 export function makeSaveError(message: string): SaveResult {
   return {
     success: false,

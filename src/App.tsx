@@ -98,6 +98,9 @@ function App() {
     try {
       let result = await editorService.trySaveEditorData(editorState, editorContent);
       setValidationErrors(result.errors);
+      if(result.noChange){
+        return;
+      }
       if(result.success){
         (window as any).addToast(`Saved ${editorState.displayName}!`, 'success');
       } else {
