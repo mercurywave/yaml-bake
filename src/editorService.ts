@@ -1,4 +1,4 @@
-import { EditorState } from './types';
+import { EditorState, SaveResult } from './types';
 import { specEditorService } from './specEditorService';
 import { recordEditorService } from './recordEditorService';
 import { parseYaml, stringifyYaml } from './yamlUtils';
@@ -12,11 +12,11 @@ export class EditorService {
     }
   }
 
-  async saveEditorData(state: EditorState, content: string) {
+  async trySaveEditorData(state: EditorState, content: string): Promise<SaveResult> {
     if (state.mode === 'spec') {
-      return specEditorService.saveEditorData(state, content);
+      return specEditorService.trySaveEditorData(state, content);
     } else {
-      return recordEditorService.saveEditorData(state, content);
+      return recordEditorService.trySaveEditorData(state, content);
     }
   }
 

@@ -66,3 +66,8 @@ export interface EditorData {
   record?: Record;
   validationErrors: ValidationError[];
 }
+
+export interface SaveResult {
+  success: boolean;
+  errors: ValidationError[];
+}

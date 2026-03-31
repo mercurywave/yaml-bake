@@ -1,4 +1,4 @@
-import { Spec, DatabaseDef, Record, EditorState } from './types';
+import { Spec, DatabaseDef, Record, EditorState, SaveResult } from './types';
 import { fileSystem } from './fileSystem';
 import { parseYaml, stringifyYaml } from './yamlUtils';
 import { validateSpec } from './specValidator';
@@ -35,17 +35,35 @@ export class SpecEditorService {
     };
   }
 
-  async saveEditorData(state: EditorState, content: string): Promise<void> {
+  async trySaveEditorData(state: EditorState, content: string): Promise<SaveResult> {
     try {
       const data = parseYaml(content);
       
       const errors = validateSpec(data);
       if (errors.length > 0) {
-        throw new Error(`Invalid spec: ${errors.join(', ')}`);
+        const validationErrors = errors.map(msg => ({
+          message: msg,
+          severity: 'error' as const
+        }));
+        return {
+          success: false,
+          errors: validationErrors
+        };
       }
+      
       await fileSystem.saveSpec(content);
+      return {
+        success: true,
+        errors: []
+      };
     } catch (error) {
-      throw new Error(`Save error: ${(error as Error).message}`);
+      return {
+        success: false,
+        errors: [{
+          message: `Save error: ${(error as Error).message}`,
+          severity: 'error' as const
+        }]
+      };
     }
   }
 

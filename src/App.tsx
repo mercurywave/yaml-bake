@@ -96,9 +96,11 @@ function App() {
     if (!editorState.mode || !editorData) return;
     
     try {
-      await editorService.saveEditorData(editorState, editorContent);
-      setValidationErrors([]);
-      (window as any).addToast(`Saved ${editorState.displayName}!`, 'success');
+      let result = await editorService.trySaveEditorData(editorState, editorContent);
+      setValidationErrors(result.errors);
+      if(result.success){
+        (window as any).addToast(`Saved ${editorState.displayName}!`, 'success');
+      }
     } catch (error) {
       setValidationErrors([{ message: (error as Error).message, severity: 'error' }]);
     }

@@ -1,4 +1,4 @@
-import { Spec, DatabaseDef, Record, EditorState } from './types';
+import { Spec, DatabaseDef, Record, EditorState, SaveResult } from './types';
 import { fileSystem } from './fileSystem';
 import { parseYaml, stringifyYaml } from './yamlUtils';
 import { validateRecord } from './dataValidator';
@@ -74,49 +74,106 @@ export class RecordEditorService {
     }
   }
 
-  async saveEditorData(state: EditorState, content: string): Promise<void> {
+  async trySaveEditorData(state: EditorState, content: string): Promise<SaveResult> {
     try {
       const data = parseYaml(content);
       
       if (!state.databaseName) {
-        throw new Error('Database name required for record editing');
+        return {
+          success: false,
+          errors: [{
+            message: 'Database name required for record editing',
+            severity: 'error' as const
+          }]
+        };
       }
       
       if (state.recordId) {
         const spec = await fileSystem.loadSpec();
         const database = spec.databases[state.databaseName];
         if (!database) {
-          throw new Error(`Database "${state.databaseName}" not found`);
+          return {
+            success: false,
+            errors: [{
+              message: `Database "${state.databaseName}" not found`,
+              severity: 'error' as const
+            }]
+          };
         }
         
         const errors = validateRecord(spec, data, database);
         if (errors.length > 0) {
-          throw new Error(`Invalid record: ${errors.join(', ')}`);
+          const validationErrors = errors.map(msg => ({
+            message: msg,
+            severity: 'error' as const
+          }));
+          return {
+            success: false,
+            errors: validationErrors
+          };
         }
         
         await fileSystem.updateRecord(state.databaseName, data);
+        return {
+          success: true,
+          errors: []
+        };
       } else {
         const spec = await fileSystem.loadSpec();
         const database = spec.databases[state.databaseName];
         if (!database) {
-          throw new Error(`Database "${state.databaseName}" not found`);
+          return {
+            success: false,
+            errors: [{
+              message: `Database "${state.databaseName}" not found`,
+              severity: 'error' as const
+            }]
+          };
         }
         
         if (!Array.isArray(data)) {
-          throw new Error('Records must be an array');
+          return {
+            success: false,
+            errors: [{
+              message: 'Records must be an array',
+              severity: 'error' as const
+            }]
+          };
         }
         
+        // Collect all validation errors instead of stopping at first error
+        const allErrors: ValidationError[] = [];
         data.forEach((record: Record, index: number) => {
           const errors = validateRecord(spec, record, database);
-          if (errors.length > 0) {
-            throw new Error(`Record at index ${index} is invalid: ${errors.join(', ')}`);
-          }
+          errors.forEach(msg => {
+            allErrors.push({
+              message: `Record at index ${index}: ${msg}`,
+              severity: 'error' as const
+            });
+          });
         });
         
+        if (allErrors.length > 0) {
+          return {
+            success: false,
+            errors: allErrors
+          };
+        }
+        
         await fileSystem.saveDatabase(state.databaseName, data);
+        return {
+          success: true,
+          errors: []
+        };
       }
     } catch (error) {
-      throw new Error(`Save error: ${(error as Error).message}`);
+      return {
+        success: false,
+        errors: [{
+          message: `Save error: ${(error as Error).message}`,
+          severity: 'error' as const
+        }]
+      };
     }
   }
 
