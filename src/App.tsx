@@ -122,12 +122,30 @@ function App() {
   };
 
   const handleDatabaseSelect = async (databaseName: string) => {
+    // Save current editor data before switching
+    if (editorState.mode && editorData && editorContent) {
+      try {
+        await handleSave();
+      } catch (error) {
+        console.error('Save failed before database switch:', error);
+      }
+    }
+    
     setSelectedDatabase(databaseName);
     setSelectedRecordId(null);
     await loadEditorData({ mode: 'record', displayName: databaseName, databaseName });
   };
 
   const handleRecordSelect = async (recordId: string) => {
+    // Save current editor data before switching
+    if (editorState.mode && editorData && editorContent) {
+      try {
+        await handleSave();
+      } catch (error) {
+        console.error('Save failed before record switch:', error);
+      }
+    }
+    
     setSelectedRecordId(recordId);
     const db = await fileSystem.loadDatabase(selectedDatabase!);
     const dbDef = (await fileSystem.loadSpec()).databases[selectedDatabase!];
@@ -139,6 +157,19 @@ function App() {
         databaseName: selectedDatabase,
         recordId });
     }
+  };
+
+  const handleSpecEdit = async () => {
+    // Save current editor data before switching
+    if (editorState.mode && editorData && editorContent) {
+      try {
+        await handleSave();
+      } catch (error) {
+        console.error('Save failed before spec switch:', error);
+      }
+    }
+    
+    await loadEditorData({ mode: 'spec', displayName: 'spec' });
   };
 
   const handleCreateRecord = async () => {
@@ -153,10 +184,6 @@ function App() {
       await editorService.deleteRecord(selectedDatabase, recordId);
       await loadEditorData({ mode: 'record', displayName: selectedDatabase, databaseName: selectedDatabase });
     }
-  };
-
-  const handleSpecEdit = async () => {
-    await loadEditorData({ mode: 'spec', displayName: 'spec' });
   };
 
   const handleFormat = () => {
