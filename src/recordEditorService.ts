@@ -75,7 +75,7 @@ export class RecordEditorService {
     }
   }
 
-  async trySaveEditorData(state: EditorState, content: string): Promise<SaveResult> {
+  async trySaveEditorData(state: EditorState, content: string, force?: boolean): Promise<SaveResult> {
     try {
       const data = parseYaml(content);
       
@@ -91,7 +91,7 @@ export class RecordEditorService {
         }
         
         const errors = validateRecord(spec, data, database);
-        if (errors.length > 0) {
+        if (!force && errors.length > 0) {
           return makeSaveErrors(errors);
         }
         
@@ -120,7 +120,7 @@ export class RecordEditorService {
           });
         });
         
-        if (allErrors.length > 0) {
+        if (!force && allErrors.length > 0) {
           return makeSaveErrors(allErrors.map(e => e.message));
         }
         

@@ -52,6 +52,15 @@ export class SpecEditorService {
     }
   }
 
+  async forceSaveEditorData(state: EditorState, content: string): Promise<SaveResult> {
+    try {
+      await fileSystem.saveSpec(content);
+      return makeSaveSuccess();
+    } catch (error) {
+      return makeSaveError(`Save error: ${(error as Error).message}`);
+    }
+  }
+
   async getValidationErrors(content: string, state: EditorState): Promise<ValidationError[]> {
     try {
       const data = parseYaml(content);

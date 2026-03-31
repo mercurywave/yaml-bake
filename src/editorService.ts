@@ -19,6 +19,14 @@ export class EditorService {
       return recordEditorService.trySaveEditorData(state, content);
     }
   }
+  
+  async forceSaveEditorData(state: EditorState, content: string): Promise<SaveResult> {
+    if (state.mode === 'spec') {
+      return specEditorService.forceSaveEditorData(state, content);
+    } else {
+      return recordEditorService.trySaveEditorData(state, content, true);
+    }
+  }
 
   async createNewRecord(databaseName: string): Promise<void> {
     return recordEditorService.createNewRecord(databaseName);
