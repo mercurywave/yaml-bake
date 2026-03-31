@@ -2,6 +2,7 @@ import { Spec, DatabaseDef, Record, EditorState, SaveResult } from './types';
 import { fileSystem } from './fileSystem';
 import { parseYaml, stringifyYaml } from './yamlUtils';
 import { validateSpec } from './specValidator';
+import { makeSaveSuccess, makeSaveError, makeSaveErrors } from './utils';
 
 export interface ValidationError {
   message: string;
@@ -41,29 +42,13 @@ export class SpecEditorService {
       
       const errors = validateSpec(data);
       if (errors.length > 0) {
-        const validationErrors = errors.map(msg => ({
-          message: msg,
-          severity: 'error' as const
-        }));
-        return {
-          success: false,
-          errors: validationErrors
-        };
+        return makeSaveErrors(errors);
       }
       
       await fileSystem.saveSpec(content);
-      return {
-        success: true,
-        errors: []
-      };
+      return makeSaveSuccess();
     } catch (error) {
-      return {
-        success: false,
-        errors: [{
-          message: `Save error: ${(error as Error).message}`,
-          severity: 'error' as const
-        }]
-      };
+      return makeSaveError(`Save error: ${(error as Error).message}`);
     }
   }
 
