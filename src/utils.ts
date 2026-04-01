@@ -1,4 +1,5 @@
 import { SaveResult, ValidationError } from './types';
+import * as yaml from 'yaml';
 
 export function makeSaveSuccess(): SaveResult {
   return {
@@ -33,4 +34,15 @@ export function makeSaveErrors(errors: string[]): SaveResult {
       severity: 'error' as const
     }))
   };
+}
+
+export function parseYaml(content: string): any {
+  if (!content.trim()) {
+    return {};
+  }
+  return yaml.parse(content);
+}
+
+export function stringifyYaml(data: any): string {
+  return yaml.stringify(data);
 }

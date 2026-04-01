@@ -1,6 +1,6 @@
 import { Spec, DatabaseDef, Record, EditorState, SaveResult } from './types';
 import { fileSystem } from './fileSystem';
-import { parseYaml, stringifyYaml } from './yamlUtils';
+import { parseYaml, stringifyYaml } from './utils';
 import { validateSpec } from './specValidator';
 import { makeSaveSuccess, makeSaveError, makeSaveErrors } from './utils';
 

@@ -1,5 +1,5 @@
 import { Spec, DatabaseDef, Record, EditorMode, EditorState } from './types';
-import { parseYaml, stringifyYaml } from './yamlUtils';
+import { parseYaml, stringifyYaml } from './utils';
 import { cleanupSpec, validateSpec } from './specValidator';
 
 declare global {

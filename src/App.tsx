@@ -3,7 +3,7 @@ import { fileSystem } from './fileSystem';
 import { EditorService } from './editorService';
 import { Spec, DatabaseDef, FieldDef, Record, EditorState, EditorData } from './types';
 import MonacoEditor from '@monaco-editor/react';
-import { parseYaml } from './yamlUtils';
+import { parseYaml } from './utils';
 import { generateDisplayName } from './dataValidator';
 import LeftPane from './LeftPane';
 import RightPane from './RightPane';

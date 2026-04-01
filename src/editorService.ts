@@ -1,7 +1,7 @@
 import { EditorState, SaveResult } from './types';
 import { specEditorService } from './specEditorService';
 import { recordEditorService } from './recordEditorService';
-import { parseYaml, stringifyYaml } from './yamlUtils';
+import { parseYaml, stringifyYaml } from './utils';
 import { makeSaveSuccess, makeSaveError, makeSaveErrors, makeSaveNoChange } from './utils';
 
 export class EditorService {
