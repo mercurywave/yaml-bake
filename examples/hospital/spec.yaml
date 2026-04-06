@@ -36,8 +36,7 @@ databases:
         type: string
         required: true
       credentials:
-        type: object
-        typeDef: TCredentials
+        type: TCredentials
   nurses:
     display: "{firstName} {lastName}"
     fields:
@@ -48,8 +47,7 @@ databases:
         type: string
         required: true
       credentials:
-        type: object
-        typeDef: TCredentials
+        type: TCredentials
   medications:
     fields:
       name:

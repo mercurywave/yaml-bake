@@ -14,31 +14,54 @@ function validateFields(spec: Spec, errors: string[], parentName: string, fields
 function validateOneField(field: FieldDef, fieldName: string, errors: string[], parentName: string, spec: Spec) {
   if (!field.type) {
     errors.push(`${parentName} field "${fieldName}" missing "type"`);
+    return;
   }
-  if (field.type === 'array' && !field.items) {
-    errors.push(`${parentName} field "${fieldName}" of type "array" missing "items"`);
-  }
-  if (field.type === 'object' && !field.fields && !field.typeDef) {
-    errors.push(`${parentName} field "${fieldName}" of type "object" missing "fields" or "typeDef"`);
-  }
-  if (field.type === 'object' && field.fields) {
-    // Recursively validate child fields for object type
-    validateFields(spec, errors, `${parentName} field "${fieldName}"`, field.fields);
-  }
-  if (field.type === 'object' && field.typeDef) {
-    const typeDef = spec.types[field.typeDef];
-    if (!typeDef) {
-      errors.push(`${parentName} field "${fieldName}" of has unknown "typeDef"`);
-    } else if (typeDef.fields) {
-      // Recursively validate fields from typeDef
-      validateFields(spec, errors, `${parentName} field "${fieldName}"`, typeDef.fields);
-    }
-  }
-  if (field.type === 'enum' && !field.options) {
-    errors.push(`${parentName} field "${fieldName}" of type "enum" missing "options"`);
-  }
-  if (field.type === 'reference' && !field.target) {
-    errors.push(`${parentName} field "${fieldName}" of type "reference" missing "target"`);
+
+  // Handle built-in types with switch statement
+  switch (field.type) {
+    case 'array':
+      if (!field.items) {
+        errors.push(`${parentName} field "${fieldName}" of type "array" missing "items"`);
+      }
+      break;
+    case 'object':
+      if (!field.fields && !field.typeDef) {
+        errors.push(`${parentName} field "${fieldName}" of type "object" missing "fields" or "typeDef"`);
+      } else if (field.fields) {
+        // Recursively validate child fields for object type
+        validateFields(spec, errors, `${parentName} field "${fieldName}"`, field.fields);
+      } else if (field.typeDef) {
+        const typeDef = spec.types[field.typeDef];
+        if (!typeDef) {
+          errors.push(`${parentName} field "${fieldName}" of has unknown "typeDef"`);
+        } else if (typeDef.fields) {
+          // Recursively validate fields from typeDef
+          validateFields(spec, errors, `${parentName} field "${fieldName}"`, typeDef.fields);
+        }
+      }
+      break;
+    case 'enum':
+      if (!field.options) {
+        errors.push(`${parentName} field "${fieldName}" of type "enum" missing "options"`);
+      }
+      break;
+    case 'reference':
+      if (!field.target) {
+        errors.push(`${parentName} field "${fieldName}" of type "reference" missing "target"`);
+      }
+      break;
+    case 'boolean':
+    case 'number': 
+    case 'string':
+    case 'date':
+    case 'uuid':
+      break;
+    default:
+      if(!spec.types[field.type]){
+        errors.push(`${parentName} field "${fieldName}"`)
+      } else {
+        validateOneField(spec.types[field.type], field.type, errors, "types", spec);
+      }
   }
 }
 
