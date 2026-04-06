@@ -26,6 +26,8 @@ databases:
                 type: string
               position:
                 type: string
+      status:
+        type: eStatus
   doctors:
     display: "{firstName} {lastName}"
     fields:

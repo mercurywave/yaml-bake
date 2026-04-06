@@ -33,11 +33,6 @@ function validateSingleFieldValue(spec: Spec, errors: string[], parentName: stri
     } else if (field.fields) {
       // Check nested fields recursively
       validateFieldValues(spec, errors, `${parentName}.${fieldName}`, field.fields, value);
-    } else if(field.typeDef) {
-      const typeDef = spec.types[field.typeDef!];
-      if (typeDef){
-        validateSingleFieldValue(spec, errors, parentName, fieldName, typeDef, value);
-      }
     }
   } else if (field.type === 'enum' && field.options && !field.options.includes(value)) {
     errors.push(`Field "${parentName}.${fieldName}" must be one of: ${field.options.join(', ')}`);
@@ -45,6 +40,10 @@ function validateSingleFieldValue(spec: Spec, errors: string[], parentName: stri
     if (typeof value !== 'string') {
       errors.push(`Field "${parentName}.${fieldName}" must be a string (reference ID)`);
     }
+  } else if (field.type && spec.types && spec.types[field.type]) {
+    const typeDef = spec.types[field.type];
+    validateSingleFieldValue(spec, errors, parentName, fieldName, typeDef, value);
+    return;
   }
 }
 
