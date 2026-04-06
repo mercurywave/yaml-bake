@@ -66,6 +66,7 @@ databases:
             required: true
 types:
   TCredentials:
+    type: object
     fields:
       license:
         type: string
@@ -73,3 +74,6 @@ types:
         type: string
       specialty:
         type: string
+  eStatus:
+    type: enum
+    options: [Alive, Deceased]

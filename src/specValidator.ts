@@ -6,12 +6,12 @@ import * as yaml from 'yaml';
  */
 function validateFields(spec: Spec, errors: string[], parentName: string, fields: { [key: string]: FieldDef }): void {
   for (const fieldName in fields) {
-    validateOneField(fields, fieldName, errors, parentName, spec);
+    const field = fields[fieldName];
+    validateOneField(field, fieldName, errors, parentName, spec);
   }
 }
 
-function validateOneField(fields: { [key: string]: FieldDef; }, fieldName: string, errors: string[], parentName: string, spec: Spec) {
-  const field = fields[fieldName];
+function validateOneField(field: FieldDef, fieldName: string, errors: string[], parentName: string, spec: Spec) {
   if (!field.type) {
     errors.push(`${parentName} field "${fieldName}" missing "type"`);
   }
@@ -74,11 +74,7 @@ export function validateSpec(spec: Spec): string[] {
     // Check each type in the types object
     for (const typeName in spec.types) {
       const typeDef = spec.types[typeName];
-      if (!typeDef.fields || typeof typeDef.fields !== 'object' || Array.isArray(typeDef.fields)) {
-        errors.push(`Type "${typeName}" missing "fields" object`);
-      } else {
-        validateFields(spec, errors, `Type "${typeName}"`, typeDef.fields);
-      }
+      validateOneField(typeDef, typeName, errors, "types", spec);
     }
   }
   

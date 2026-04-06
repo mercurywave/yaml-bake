@@ -36,7 +36,7 @@ function validateSingleFieldValue(spec: Spec, errors: string[], parentName: stri
     } else if(field.typeDef) {
       const typeDef = spec.types[field.typeDef!];
       if (typeDef){
-        validateFieldValues(spec, errors, `${parentName}.${fieldName}`, typeDef.fields, value);
+        validateSingleFieldValue(spec, errors, parentName, fieldName, typeDef, value);
       }
     }
   } else if (field.type === 'enum' && field.options && !field.options.includes(value)) {

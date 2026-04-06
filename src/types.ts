@@ -30,12 +30,8 @@ export interface DatabaseDef {
 
 export interface Spec {
   databases: { [key: string]: DatabaseDef };
-  types: { [key: string]: TypeDef };
+  types: { [key: string]: FieldDef };
   rawSpec: string;
-}
-
-export interface TypeDef {
-  fields: { [key: string]: FieldDef };
 }
 
 export interface Record {
