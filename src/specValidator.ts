@@ -21,10 +21,17 @@ function validateOneField(fields: { [key: string]: FieldDef; }, fieldName: strin
   if (field.type === 'object' && !field.fields && !field.typeDef) {
     errors.push(`${parentName} field "${fieldName}" of type "object" missing "fields" or "typeDef"`);
   }
+  if (field.type === 'object' && field.fields) {
+    // Recursively validate child fields for object type
+    validateFields(spec, errors, `${parentName} field "${fieldName}"`, field.fields);
+  }
   if (field.type === 'object' && field.typeDef) {
     const typeDef = spec.types[field.typeDef];
     if (!typeDef) {
       errors.push(`${parentName} field "${fieldName}" of has unknown "typeDef"`);
+    } else if (typeDef.fields) {
+      // Recursively validate fields from typeDef
+      validateFields(spec, errors, `${parentName} field "${fieldName}"`, typeDef.fields);
     }
   }
   if (field.type === 'enum' && !field.options) {
