@@ -6,28 +6,32 @@ import * as yaml from 'yaml';
  */
 function validateFields(spec: Spec, errors: string[], parentName: string, fields: { [key: string]: FieldDef }): void {
   for (const fieldName in fields) {
-    const field = fields[fieldName];
-    if (!field.type) {
-      errors.push(`${parentName} field "${fieldName}" missing "type"`);
+    validateOneField(fields, fieldName, errors, parentName, spec);
+  }
+}
+
+function validateOneField(fields: { [key: string]: FieldDef; }, fieldName: string, errors: string[], parentName: string, spec: Spec) {
+  const field = fields[fieldName];
+  if (!field.type) {
+    errors.push(`${parentName} field "${fieldName}" missing "type"`);
+  }
+  if (field.type === 'array' && !field.items) {
+    errors.push(`${parentName} field "${fieldName}" of type "array" missing "items"`);
+  }
+  if (field.type === 'object' && !field.fields && !field.typeDef) {
+    errors.push(`${parentName} field "${fieldName}" of type "object" missing "fields" or "typeDef"`);
+  }
+  if (field.type === 'object' && field.typeDef) {
+    const typeDef = spec.types[field.typeDef];
+    if (!typeDef) {
+      errors.push(`${parentName} field "${fieldName}" of has unknown "typeDef"`);
     }
-    if (field.type === 'array' && !field.items) {
-      errors.push(`${parentName} field "${fieldName}" of type "array" missing "items"`);
-    }
-    if (field.type === 'object' && !field.fields && !field.typeDef) {
-      errors.push(`${parentName} field "${fieldName}" of type "object" missing "fields" or "typeDef"`);
-    }
-    if (field.type === 'object' && field.typeDef) {
-      const typeDef = spec.types[field.typeDef];
-      if(!typeDef) {
-        errors.push(`${parentName} field "${fieldName}" of has unknown "typeDef"`);
-      }
-    }
-    if (field.type === 'enum' && !field.options) {
-      errors.push(`${parentName} field "${fieldName}" of type "enum" missing "options"`);
-    }
-    if (field.type === 'reference' && !field.target) {
-      errors.push(`${parentName} field "${fieldName}" of type "reference" missing "target"`);
-    }
+  }
+  if (field.type === 'enum' && !field.options) {
+    errors.push(`${parentName} field "${fieldName}" of type "enum" missing "options"`);
+  }
+  if (field.type === 'reference' && !field.target) {
+    errors.push(`${parentName} field "${fieldName}" of type "reference" missing "target"`);
   }
 }
 
