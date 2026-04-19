@@ -22,6 +22,9 @@ let currentFieldDefs: { [key: string]: FieldDef } | null = null;
 let currentDatabaseName: string | null = null;
 let ghostDecorationCollection: monaco.editor.IEditorDecorationsCollection | null = null;
 
+// Track whether completion providers have been registered (once per page lifecycle)
+let completionProvidersRegistered = false;
+
 /**
  * Resolve a field type alias from the spec's custom types.
  */
@@ -109,22 +112,30 @@ function findFieldForKey(
 }
 
 /**
- * Register all LSP providers with Monaco.
+ * Register completion providers at the language level (once per page lifecycle).
  */
-export function registerLspProviders(
+export function registerCompletionProviders(): void {
+  if (completionProvidersRegistered) return;
+  completionProvidersRegistered = true;
+
+  registerFieldCompletionProvider();
+  registerReferenceCompletionProvider();
+}
+
+/**
+ * Register ghost text decorations for a specific editor instance.
+ * This should be called every time the editor remounts.
+ */
+export function registerGhostText(
   editor: monaco.editor.IStandaloneCodeEditor,
   callbacks: LspCallbacks
 ): void {
-  unregisterProviders();
   ghostDecorationCollection = editor.createDecorationsCollection();
-
-  registerFieldCompletionProvider(editor, callbacks);
-  registerReferenceCompletionProvider(editor, callbacks);
   updateGhostText(editor, callbacks);
 }
 
 /**
- * Unregister all providers and clean up.
+ * Unregister ghost text decorations and clean up editor-specific state.
  */
 export function unregisterProviders(): void {
   // Dispose all registered providers
@@ -147,12 +158,8 @@ export function unregisterProviders(): void {
  * Register the field name completion provider.
  * Suggests field names from the database spec when editing YAML keys.
  */
-function registerFieldCompletionProvider(
-  editor: monaco.editor.IStandaloneCodeEditor,
-  callbacks: LspCallbacks
-): void {
+function registerFieldCompletionProvider(): void {
   const provider = monaco.languages.registerCompletionItemProvider('yaml', {
-    triggerCharacters: [':'],
 
     provideCompletionItems(model, position, _context, _token) {
       const lineText = model.getLineContent(position.lineNumber);
@@ -313,10 +320,7 @@ function provideFieldSuggestions(
  * Register the reference pointer completion provider.
  * Shows records from the target database by display name.
  */
-function registerReferenceCompletionProvider(
-  editor: monaco.editor.IStandaloneCodeEditor,
-  callbacks: LspCallbacks
-): void {
+function registerReferenceCompletionProvider(): void {
   const provider = monaco.languages.registerCompletionItemProvider('yaml', {
 
     provideCompletionItems(model, position, _context, _token) {

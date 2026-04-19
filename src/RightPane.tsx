@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import { EditorState, EditorData } from './types';
-import { registerLspProviders, unregisterProviders, updateGhostText, updateFieldDefs } from './lsp';
+import { registerCompletionProviders, registerGhostText, unregisterProviders, updateGhostText, updateFieldDefs } from './lsp';
 
 interface RightPaneProps {
   editorState: EditorState;
@@ -44,10 +44,14 @@ const RightPane: React.FC<RightPaneProps> = ({
   }, []);
 
   useEffect(() => {
+    registerCompletionProviders();
+  }, []);
+
+  useEffect(() => {
     if (!currentEditor) return;
 
     if (editorState.mode === 'record' && editorData?.database) {
-      registerLspProviders(currentEditor, {
+      registerGhostText(currentEditor, {
         getDatabaseName: () => editorState.databaseName,
         getEditorContent: () => contentRef.current,
       });
@@ -155,7 +159,8 @@ const RightPane: React.FC<RightPaneProps> = ({
                 lineNumbers: 'on',
                 suggest: {
                   showStatusBar: true,
-                }
+                },
+                snippetSuggestions: 'none',
               }}
             />
           )}
