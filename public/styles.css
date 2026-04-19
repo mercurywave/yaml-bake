@@ -294,3 +294,11 @@ body {
   background: none;
   border: none;
 }
+
+.ghost-text {
+  color: #8c8fa7 !important;
+  font-style: italic;
+  font-size: 13px;
+  pointer-events: none;
+  user-select: none;
+}

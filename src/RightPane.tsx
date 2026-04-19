@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import MonacoEditor from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
 import { EditorState, EditorData } from './types';
+import { registerLspProviders, unregisterProviders, updateGhostText, updateFieldDefs } from './lsp';
 
 interface RightPaneProps {
   editorState: EditorState;
@@ -33,6 +35,61 @@ const RightPane: React.FC<RightPaneProps> = ({
   editorData,
   getValidationErrors
 }) => {
+  const [currentEditor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const contentRef = useRef(editorContent);
+  contentRef.current = editorContent;
+
+  const handleEditorMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
+    setEditor(editor);
+  }, []);
+
+  useEffect(() => {
+    if (!currentEditor) return;
+
+    if (editorState.mode === 'record' && editorData?.database) {
+      registerLspProviders(currentEditor, {
+        getDatabaseName: () => editorState.databaseName,
+        getEditorContent: () => contentRef.current,
+      });
+      updateFieldDefs(editorState.databaseName || null, editorData.database.fields);
+      updateGhostText(currentEditor, {
+        getDatabaseName: () => editorState.databaseName,
+        getEditorContent: () => contentRef.current,
+      });
+      // Ghost text is deferred inside updateGhostText via setTimeout
+    } else {
+      unregisterProviders();
+      updateFieldDefs(null, null);
+    }
+  }, [currentEditor, editorState.databaseName, editorData, editorState.mode]);
+
+  const handleEditorChange = useCallback((value: string | undefined) => {
+    if (value !== undefined) {
+      setEditorContent(value);
+      
+      // Update ghost text on content change
+      if (editorState.mode === 'record' && currentEditor) {
+        updateGhostText(currentEditor, {
+          getDatabaseName: () => editorState.databaseName,
+          getEditorContent: () => value,
+        });
+      }
+      
+      if (editorData) {
+        getValidationErrors(value, editorState).then(errors => {
+          // This would be handled by parent component
+        });
+      }
+    }
+  }, [currentEditor, editorState, editorData, setEditorContent, getValidationErrors]);
+
+  useEffect(() => {
+    return () => {
+      unregisterProviders();
+      updateFieldDefs(null, null);
+    };
+  }, []);
+
   return (
     <div className="right-pane">
       <div className="toolbar">
@@ -84,18 +141,10 @@ const RightPane: React.FC<RightPaneProps> = ({
             <MonacoEditor
               height="100%"
               language="yaml"
-              defaultValue={editorContent}
-              onChange={(value) => {
-                if (value !== undefined) {
-                  setEditorContent(value);
-                  if (editorData) {
-                    getValidationErrors(value, editorState).then(errors => {
-                      // This would be handled by parent component
-                    });
-                  }
-                }
-              }}
+              value={editorContent}
+              onChange={handleEditorChange}
               theme="vs-dark"
+              onMount={handleEditorMount}
               options={{
                 minimap: { enabled: true },
                 fontSize: 14,
