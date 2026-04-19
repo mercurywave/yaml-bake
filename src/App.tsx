@@ -8,6 +8,7 @@ import { generateDisplayName } from './dataValidator';
 import LeftPane from './LeftPane';
 import RightPane from './RightPane';
 import ToastManager from './ToastManager';
+import { setSpec, setDatabases } from './global';
 import './specEditorService';
 import './recordEditorService';
 
@@ -48,6 +49,11 @@ function App() {
       setValidationErrors(data.validationErrors.map(e => ({ message: e.message, severity: e.severity })));
       const databases = await fileSystem.loadAllDatabases();
       
+      // Cache spec and databases for LSP providers
+      const spec = await fileSystem.loadSpec();
+      setSpec(spec);
+      setDatabases(databases);
+      
       if (state.mode === 'spec') {
         // Handle object database structure
         
@@ -72,14 +78,13 @@ function App() {
         } else {
           // Load records for this database
           const records = await fileSystem.loadDatabase(state.databaseName);
-          const spec = await fileSystem.loadSpec();
-          const database = spec.databases[state.databaseName];
+          const db = spec.databases[state.databaseName];
           
           setRecordList(records.map(record => ({
             id: record.id || '',
             warning: false,
             error: false,
-            displayName: database ? generateDisplayName(record, database) : record.id || ''
+            displayName: db ? generateDisplayName(record, db) : record.id || ''
           })));
         }
       }
@@ -201,6 +206,8 @@ function App() {
       try {
         const spec = await fileSystem.loadSpec();
         const databases = await fileSystem.loadAllDatabases();
+        setSpec(spec);
+        setDatabases(databases);
         setDatabaseList(Object.keys(databases).map(k => ({
           name: k,
           count: databases[k].length,
