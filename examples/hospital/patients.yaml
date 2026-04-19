@@ -1,7 +1,7 @@
 - id: 0e6868e8-02d2-4578-9dd0-40537bb8915f
   firstName: Jon
   lastName: Doe
-  admitting: 997cc02d-e5d8-402b-b0bd-dbbf6c7fd306-err
+  admitting: 997cc02d-e5d8-402b-b0bd-dbbf6c7fd306
   diagnosis:
     code: Encounter with Orca
     location:
