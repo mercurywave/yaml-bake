@@ -210,8 +210,6 @@ function registerFieldCompletionProvider(): void {
       return { suggestions };
     },
   });
-
-  disposables.add(provider);
 }
 
 /**
@@ -401,8 +399,6 @@ function registerReferenceCompletionProvider(): void {
       return { suggestions };
     },
   });
-
-  disposables.add(provider);
 }
 
 /**

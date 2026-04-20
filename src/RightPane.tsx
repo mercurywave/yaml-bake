@@ -43,9 +43,7 @@ const RightPane: React.FC<RightPaneProps> = ({
     setEditor(editor);
   }, []);
 
-  useEffect(() => {
-    registerCompletionProviders();
-  }, []);
+  registerCompletionProviders();
 
   useEffect(() => {
     if (!currentEditor) return;
@@ -161,6 +159,7 @@ const RightPane: React.FC<RightPaneProps> = ({
                   showStatusBar: true,
                 },
                 snippetSuggestions: 'none',
+                wordBasedSuggestions: 'off',
               }}
             />
           )}
