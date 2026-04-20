@@ -1,5 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
-import MonacoEditor from '@monaco-editor/react';
+import React, { useRef, useEffect } from 'react';
 import * as monaco from 'monaco-editor';
 import { EditorState, EditorData } from './types';
 import { registerCompletionProviders, registerGhostText, unregisterProviders, updateGhostText, updateFieldDefs } from './lsp';
@@ -35,62 +34,87 @@ const RightPane: React.FC<RightPaneProps> = ({
   editorData,
   getValidationErrors
 }) => {
-  const [currentEditor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const modelRef = useRef<monaco.editor.ITextModel | null>(null);
   const contentRef = useRef(editorContent);
   contentRef.current = editorContent;
 
-  const handleEditorMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
-    setEditor(editor);
-  }, []);
-
-  registerCompletionProviders();
-
+  // Create editor once on mount
   useEffect(() => {
-    if (!currentEditor) return;
+    if (!containerRef.current) return;
 
-    if (editorState.mode === 'record' && editorData?.database) {
-      registerGhostText(currentEditor, {
-        getDatabaseName: () => editorState.databaseName,
-        getEditorContent: () => contentRef.current,
-      });
-      updateFieldDefs(editorState.databaseName || null, editorData.database.fields);
-      updateGhostText(currentEditor, {
-        getDatabaseName: () => editorState.databaseName,
-        getEditorContent: () => contentRef.current,
-      });
-      // Ghost text is deferred inside updateGhostText via setTimeout
-    } else {
-      unregisterProviders();
-      updateFieldDefs(null, null);
-    }
-  }, [currentEditor, editorState.databaseName, editorData, editorState.mode]);
+    const model = monaco.editor.createModel(
+      contentRef.current,
+      'yaml'
+    );
+    modelRef.current = model;
 
-  const handleEditorChange = useCallback((value: string | undefined) => {
-    if (value !== undefined) {
+    const editor = monaco.editor.create(containerRef.current, {
+      model,
+      theme: 'vs-dark',
+      minimap: { enabled: true },
+      fontSize: 14,
+      scrollBeyondLastLine: false,
+      automaticLayout: true,
+      wordWrap: 'on',
+      renderLineHighlight: 'gutter',
+      lineNumbers: 'on',
+      suggest: {
+        showStatusBar: true,
+      },
+      snippetSuggestions: 'none',
+      wordBasedSuggestions: 'off',
+    });
+
+    editorRef.current = editor;
+
+    // Listen for content changes from the user
+    const listener = editor.onDidChangeModelContent(() => {
+      const value = model.getValue();
+      contentRef.current = value;
       setEditorContent(value);
-      
-      // Update ghost text on content change
-      if (editorState.mode === 'record' && currentEditor) {
-        updateGhostText(currentEditor, {
-          getDatabaseName: () => editorState.databaseName,
-          getEditorContent: () => value,
-        });
-      }
-      
-      if (editorData) {
-        getValidationErrors(value, editorState).then(errors => {
-          // This would be handled by parent component
-        });
-      }
-    }
-  }, [currentEditor, editorState, editorData, setEditorContent, getValidationErrors]);
+    });
 
-  useEffect(() => {
+    // Register LSP providers and ghost text once
+    registerCompletionProviders();
+    registerGhostText(editor, {
+      getDatabaseName: () => editorState.databaseName || undefined,
+      getEditorContent: () => contentRef.current,
+    });
+
     return () => {
+      listener.dispose();
+      editorRef.current = null;
+      editor.dispose();
+      modelRef.current = null;
+      model.dispose();
       unregisterProviders();
       updateFieldDefs(null, null);
     };
   }, []);
+
+  // Sync external content changes into the model
+  useEffect(() => {
+    if (modelRef.current && editorContent !== modelRef.current.getValue()) {
+      modelRef.current.setValue(editorContent);
+    }
+  }, [editorContent]);
+
+  // Update field defs and ghost text when database changes
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    if (editorState.mode === 'record' && editorData?.database) {
+      updateFieldDefs(editorState.databaseName || null, editorData.database.fields);
+    } else {
+      updateFieldDefs(null, null);
+    }
+    updateGhostText(editorRef.current, {
+      getDatabaseName: () => editorState.databaseName || undefined,
+      getEditorContent: () => contentRef.current,
+    });
+  }, [editorState.databaseName, editorData, editorState.mode]);
 
   return (
     <div className="right-pane">
@@ -134,41 +158,19 @@ const RightPane: React.FC<RightPaneProps> = ({
       </div>
       
       <div className="editor-container">
-        <div className="editor-wrapper">
-          {isLoading ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-              <p>Loading...</p>
-            </div>
-          ) : (
-            <MonacoEditor
-              height="100%"
-              language="yaml"
-              value={editorContent}
-              onChange={handleEditorChange}
-              theme="vs-dark"
-              onMount={handleEditorMount}
-              options={{
-                minimap: { enabled: true },
-                fontSize: 14,
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                wordWrap: 'on',
-                renderLineHighlight: 'gutter',
-                lineNumbers: 'on',
-                suggest: {
-                  showStatusBar: true,
-                },
-                snippetSuggestions: 'none',
-                wordBasedSuggestions: 'off',
-              }}
-            />
-          )}
+        <div className={`editor-wrapper ${isLoading ? 'loading' : ''}`}>
+          <div ref={containerRef} className="monaco-container" />
         </div>
+        {isLoading && (
+          <div className="loading-overlay">
+            <p>Loading...</p>
+          </div>
+        )}
       
         <div className="error-panel">
           <h3>Validation</h3>
           {validationErrors.length === 0 ? (
-            <p style={{ color: '#a6e3a1' }}>✓ No errors</p>
+            <p className="no-errors">✓ No errors</p>
           ) : (
             <ul className="error-list">
               {validationErrors.map((err, idx) => (
