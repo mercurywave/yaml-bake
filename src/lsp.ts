@@ -59,7 +59,11 @@ function parseYamlKeyValueLine(line: string): { key: string; value: string; inde
   const trimmed = line.trimStart();
   const indent = line.length - trimmed.length;
 
-  if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('---') || trimmed.startsWith('...')) {
+  if(!trimmed) {
+    return { key: '', value: '', indent };
+  }
+
+  if (trimmed.startsWith('#') || trimmed.startsWith('---') || trimmed.startsWith('...')) {
     return null;
   }
 
